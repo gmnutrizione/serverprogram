@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<title>Migrazione foto alimenti/ricette su Supabase Storage</title>
+<style>
+  body{ font-family: -apple-system, Segoe UI, Roboto, sans-serif; max-width: 820px; margin: 30px auto; padding: 0 16px; color:#1a1a1a; }
+  h1{ font-size: 20px; }
+  p{ line-height: 1.5; }
+  .step{ background:#f6f6f6; border-radius:8px; padding:14px 16px; margin:14px 0; }
+  button{ font-size:15px; padding:10px 18px; border-radius:6px; border:1px solid #333; background:#1a1a1a; color:#fff; cursor:pointer; }
+  button:disabled{ opacity:0.5; cursor:default; }
+  #log{ font-family: ui-monospace, monospace; font-size:12.5px; white-space:pre-wrap; background:#111; color:#c8f7c5; padding:12px; border-radius:8px; max-height:320px; overflow:auto; margin-top:12px; }
+  #riepilogo{ font-weight:600; margin-top:10px; }
+  textarea{ width:100%; height:260px; font-family: ui-monospace, monospace; font-size:12.5px; margin-top:10px; }
+  .err{ color:#ff8a8a; }
+  .warn{ background:#fff3cd; border:1px solid #ffe69c; padding:10px 14px; border-radius:8px; margin:14px 0; font-size:14px; }
+</style>
+</head>
+<body>
+<h1>Migrazione foto alimenti/ricette da Google Drive a Supabase Storage</h1>
+<p>Questa pagina trova tutti gli alimenti e le ricette che oggi hanno una foto salvata come link di Google Drive,
+scarica ogni immagine e la ricarica sul bucket Supabase "immagini" — poi prepara lo script SQL per aggiornare i
+record con il nuovo indirizzo, più veloce da caricare (niente più lag).</p>
+
+<div class="warn">
+<strong>Prima di iniziare:</strong> crea il bucket una volta sola, se non l'hai già fatto — Supabase → Storage →
+"New bucket" → nome esattamente <code>immagini</code> → attiva "Public bucket" → Create.
+</div>
+
+<div class="warn">
+<strong>Nota onesta:</strong> Google Drive a volte blocca lo scaricamento diretto da una pagina come questa
+(una protezione di Google, non qualcosa che posso controllare io). Se succede, ogni voce che fallisce viene
+segnalata nel registro qui sotto senza bloccare le altre — alla fine ti dico quante sono andate a buon fine e
+quante no, e per quelle non riuscite si può sempre procedere a mano dalla dashboard Supabase.
+</div>
+
+<div class="step">
+  <button id="btnCarica">1. Trova le foto da migrare</button>
+  <span id="statoCarica"></span>
+</div>
+
+<div class="step" id="anteprimaBox" style="display:none;">
+  <div id="anteprima"></div>
+  <button id="btnAvvia" style="margin-top:10px;">2. Avvia la migrazione</button>
+</div>
+
+<div id="log" style="display:none;"></div>
+<div id="riepilogo"></div>
+
+<div id="risultatoBox" style="display:none;">
+  <p><strong>3.</strong> Copia tutto il testo qui sotto e incollalo/eseguilo nel SQL Editor di Supabase per
+  aggiornare i record con le nuove foto:</p>
+  <textarea id="sqlOutput" readonly></textarea>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://ipereqxfukghczjynpnu.supabase.co";
+  const SUPABASE_ANON_KEY = "sb_publishable_-HemDJnuJp3OWZ0hZABiYA_ytBJa_Fo";
+  const BUCKET = "immagini";
+
+  function log(msg, isErr){
+    const el = document.getElementById('log');
+    el.style.display = 'block';
+    const line = document.createElement('div');
+    if(isErr) line.className = 'err';
+    line.textContent = msg;
+    el.appendChild(line);
+    el.scrollTop = el.scrollHeight;
+  }
+
+  async function rpc(nome){
+    const res = await fetch(SUPABASE_URL + '/rest/v1/rpc/' + nome, {
+      method: 'POST',
+      headers: {
+        'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json',
+      },
+      body: '{}',
+    });
+    if(!res.ok) throw new Error('Errore chiamando ' + nome + ' (' + res.status + ')');
+    return res.json();
+  }
+
+  let DA_MIGRARE = [];
+
+  document.getElementById('btnCarica').addEventListener('click', async () => {
+    document.getElementById('statoCarica').textContent = ' caricamento...';
+    try{
+      const [rAlimenti, rRicette] = await Promise.all([rpc('alimenti'), rpc('ricette')]);
+      const alimenti = (rAlimenti.alimenti || []).filter(a => a.immagine && a.immagine.indexOf('drive.google.com') !== -1);
+      const ricette = (rRicette.ricette || []).filter(r => r.foto && r.foto.indexOf('drive.google.com') !== -1);
+
+      DA_MIGRARE = [
+        ...alimenti.map(a => ({ tabella: 'alimenti', campo: 'immagine', id: a.id, nome: a.nome, url: a.immagine })),
+        ...ricette.map(r => ({ tabella: 'ricette', campo: 'foto', id: r.riga, nome: r.nome, url: r.foto })),
+      ];
+
+      document.getElementById('statoCarica').textContent = ' fatto — ' + DA_MIGRARE.length + ' foto trovate (' + alimenti.length + ' alimenti, ' + ricette.length + ' ricette).';
+      document.getElementById('anteprima').textContent = DA_MIGRARE.length
+        ? DA_MIGRARE.map(x => '• [' + x.tabella + '] ' + x.nome).join('\n')
+        : 'Nessuna foto su Google Drive da migrare: sono già tutte su Supabase (o non ce ne sono).';
+      document.getElementById('anteprimaBox').style.display = 'block';
+      document.getElementById('btnAvvia').disabled = DA_MIGRARE.length === 0;
+    }catch(err){
+      document.getElementById('statoCarica').textContent = ' errore: ' + err.message;
+    }
+  });
+
+  document.getElementById('btnAvvia').addEventListener('click', async () => {
+    document.getElementById('btnAvvia').disabled = true;
+    const sqlRighe = [];
+    let ok = 0, falliti = 0;
+
+    for(const item of DA_MIGRARE){
+      try{
+        const imgRes = await fetch(item.url);
+        if(!imgRes.ok) throw new Error('scaricamento fallito (' + imgRes.status + ')');
+        const blob = await imgRes.blob();
+        const estensione = (blob.type && blob.type.indexOf('png') !== -1) ? 'png' : 'jpg';
+        const percorso = item.tabella + '/' + item.id + '.' + estensione;
+
+        const upRes = await fetch(SUPABASE_URL + '/storage/v1/object/' + BUCKET + '/' + percorso, {
+          method: 'POST',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY, 'Authorization': 'Bearer ' + SUPABASE_ANON_KEY,
+            'Content-Type': blob.type || 'image/jpeg', 'x-upsert': 'true',
+          },
+          body: blob,
+        });
+        if(!upRes.ok) throw new Error('caricamento su Supabase fallito (' + upRes.status + ')');
+
+        const nuovoUrl = SUPABASE_URL + '/storage/v1/object/public/' + BUCKET + '/' + percorso;
+        sqlRighe.push("update " + item.tabella + " set " + item.campo + " = '" + nuovoUrl.replace(/'/g, "''") + "' where id = " + item.id + ";");
+        log('OK — ' + item.nome);
+        ok++;
+      }catch(err){
+        log('SALTATO — ' + item.nome + ' (' + err.message + ')', true);
+        falliti++;
+      }
+    }
+
+    document.getElementById('riepilogo').textContent = 'Fatto: ' + ok + ' migrate, ' + falliti + ' non riuscite.';
+    if(sqlRighe.length){
+      document.getElementById('risultatoBox').style.display = 'block';
+      document.getElementById('sqlOutput').value =
+        '-- Aggiorna alimenti/ricette con le nuove foto su Supabase Storage\n' + sqlRighe.join('\n');
+    }
+  });
+</script>
+</body>
+</html>
