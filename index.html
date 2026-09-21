@@ -541,7 +541,7 @@
     padding:12px 13px; box-shadow:var(--shadow-1); margin-bottom:14px;
   }
   .pp-meal-head{ font-family:var(--font-display); font-size:13.5px; font-weight:600; margin-bottom:9px; }
-  .pp-row{ display:flex; align-items:center; gap:8px; padding:4px 0; }
+  .pp-row{ display:flex; align-items:center; gap:8px; padding:4px 0; cursor:pointer; }
   .pp-dot{ width:5px; height:5px; border-radius:50%; background:var(--sage); flex:none; }
   .pp-row-nome{ flex:1; font-size:12.3px; min-width:0; }
   .pp-qty{ font-size:10.8px; font-weight:600; color:var(--accent-ink); background:var(--accent-soft); padding:3px 9px; border-radius:999px; flex:none; }
@@ -682,12 +682,25 @@
   }
   .unit-toggle-wide{ display:flex; margin-top:14px; }
   .unit-toggle-wide .chip{ flex:1; justify-content:center; text-align:center; font-size:11px; padding:7px 6px; white-space:nowrap; }
-  .alimento-detail-nutri-grid{ display:grid; grid-template-columns:1fr 1fr; gap:13px 18px; margin-bottom:2px; }
-  .alimento-detail-nutri-cell .lbl{ display:block; font-size:11px; color:var(--ink-faint); margin-bottom:2px; }
-  .alimento-detail-nutri-cell .val{ font-size:15.5px; font-weight:700; color:var(--ink); }
+  /* Griglia nutrienti compatta: una riga per valore (etichetta + numero affiancati) invece di due
+     righe impilate — stessa informazione, meno spazio verticale nella scheda. */
+  .alimento-detail-nutri-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0 18px; margin-bottom:2px; }
+  .alimento-detail-nutri-cell{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; padding:5px 0; border-bottom:1px solid var(--border-soft); }
+  .alimento-detail-nutri-cell .lbl{ font-size:11.5px; color:var(--ink-faint); }
+  .alimento-detail-nutri-cell .val{ font-size:13.5px; font-weight:700; color:var(--ink); }
   .alimento-detail-section{ margin-top:14px; padding-top:12px; border-top:1px dashed var(--border-soft); }
   .alimento-detail-section h5{ font-size:12.5px; font-weight:700; margin:0 0 5px; }
   .alimento-detail-section p{ font-size:12.5px; color:var(--ink-soft); margin:0; line-height:1.55; }
+  /* ---- Dettaglio alimento: calcolatrice "Da crudo a cotto" ---- */
+  .cotto-calc-row{ display:flex; align-items:flex-end; gap:10px; margin-top:2px; }
+  .cotto-calc-field{ flex:1; min-width:0; }
+  .cotto-calc-field label{ display:block; font-size:10.5px; color:var(--ink-faint); text-transform:uppercase; letter-spacing:.04em; margin-bottom:5px; }
+  .cotto-calc-input{ display:flex; align-items:center; justify-content:space-between; gap:6px; background:var(--surface); border:1px solid var(--border); border-radius:8px; padding:8px 10px; }
+  .cotto-calc-input input{ border:none; background:transparent; font-family:var(--font-mono); font-size:15px; color:var(--ink); width:100%; outline:none; padding:0; -moz-appearance:textfield; }
+  .cotto-calc-input input::-webkit-outer-spin-button, .cotto-calc-input input::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0; }
+  .cotto-calc-input span{ font-size:12px; color:var(--ink-faint); flex:none; }
+  .cotto-calc-arrow{ flex:none; padding-bottom:9px; color:var(--ink-faint); font-size:15px; }
+  .cotto-calc-hint{ font-size:11.5px; color:var(--ink-faint); margin:9px 0 0; line-height:1.5; }
 
   /* ---- Spesa: lista editabile (stile "La tua lista") ---- */
   .spesa-list-row{
@@ -1955,6 +1968,21 @@
               <button type="button" class="chip" data-unit="100g" onclick="setUnitaAlimenti('100g')">Per 100 g</button>
             </div>
             <div class="alimento-detail-nutri-grid" id="p-modal-alimento-nutri"></div>
+            <div class="alimento-detail-section" id="p-modal-alimento-cotto-wrap" style="display:none;">
+              <h5>Da crudo a cotto</h5>
+              <div class="cotto-calc-row">
+                <div class="cotto-calc-field">
+                  <label for="p-modal-cotto-crudo">Crudo</label>
+                  <div class="cotto-calc-input"><input type="number" id="p-modal-cotto-crudo" min="0" step="5"><span>g</span></div>
+                </div>
+                <div class="cotto-calc-arrow">→</div>
+                <div class="cotto-calc-field">
+                  <label for="p-modal-cotto-cotto">Cotto</label>
+                  <div class="cotto-calc-input"><input type="number" id="p-modal-cotto-cotto" min="0" step="5"><span>g</span></div>
+                </div>
+              </div>
+              <p class="cotto-calc-hint" id="p-modal-cotto-hint"></p>
+            </div>
             <div class="alimento-detail-section" id="p-modal-alimento-ingredienti-wrap" style="display:none;">
               <h5>Ingredienti</h5>
               <p id="p-modal-alimento-ingredienti"></p>
@@ -2240,7 +2268,28 @@
     });
     if(!upRes.ok) return { ok:false, error: 'Caricamento del file non riuscito (' + upRes.status + '). Controlla di aver creato il bucket "piani-pdf" come pubblico.' };
     const url = SUPABASE_URL + '/storage/v1/object/public/piani-pdf/' + encodeURIComponent(percorso);
-    return apiRpcChiamata_('caricaPiano', { codice: body.codice, paziente: body.paziente, filename: body.filename, url });
+    const risultato = await apiRpcChiamata_('caricaPiano', { codice: body.codice, paziente: body.paziente, filename: body.filename, url });
+    apiSpecchioCaricaPianoPdf_(body); // copia sul Google Sheet esistente, in background: non blocca né condiziona il risultato sopra
+    return risultato;
+  }
+
+  // Copia il PDF anche sul Google Sheet già esistente, chiamando lo stesso Apps Script (Codice.gs) già
+  // in produzione, con la stessa azione "caricaPiano" che usa da sempre — usa il codice digitato al
+  // login (SESSION.codice), MAI un codice scritto fisso nel file, per non lasciare il codice del
+  // professionista leggibile nel sorgente della pagina. Va a buon fine solo se SPECCHIO_ATTIVO è true
+  // e l'URL sotto è stato incollato: finché resta così com'è, questa funzione non fa nulla.
+  let SPECCHIO_APPS_SCRIPT_URL = "INCOLLA_QUI_URL_APPS_SCRIPT"; // stesso URL incollato in specchio_config su Supabase
+  let SPECCHIO_ATTIVO = false; // metti a true solo dopo aver acceso lo specchio anche lato Supabase
+  function apiSpecchioCaricaPianoPdf_(body){
+    if(!SPECCHIO_ATTIVO || !SPECCHIO_APPS_SCRIPT_URL || SPECCHIO_APPS_SCRIPT_URL.indexOf('INCOLLA_QUI') !== -1) return;
+    fetch(SPECCHIO_APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // evita il preflight CORS, stesso accorgimento già usato in produzione
+      body: JSON.stringify({
+        action: 'caricaPiano', codice: body.codice, paziente: body.paziente,
+        filename: body.filename, mime: body.mime, fileBase64: body.fileBase64,
+      }),
+    }).catch(function(err){ console.warn('Copia del PDF sul foglio Google non riuscita (il caricamento su Supabase resta comunque valido):', err); });
   }
 
   // Le richieste di LETTURA a volte incappano in un intoppo temporaneo di rete (che di solito si
@@ -4832,6 +4881,35 @@
       <div class="alimento-detail-nutri-cell"><span class="lbl">${ETICHETTE_DETTAGLIO[k2]}</span><span class="val num">${cpFmt(cpValoreAlimento(f,k2))}${byKey[k2].unit ? ' '+byKey[k2].unit : ''}</span></div>
     `).join('');
   }
+  // Calcolatrice "Da crudo a cotto": compare solo se l'alimento ha un peso da cotto impostato
+  // (facoltativo — non tutti gli alimenti si cucinano). Il campo "Crudo" parte già compilato con
+  // la quantità scritta nel piano, se la scheda è stata aperta cliccando un alimento del piano;
+  // altrimenti parte da 100 g. I due campi restano sempre allineati tra loro mentre si scrive.
+  function aggiornaDettaglioCotto(f, gContesto){
+    const wrap = document.getElementById('p-modal-alimento-cotto-wrap');
+    const fattore = (f && f.pesoCotto != null && isFinite(f.pesoCotto) && Number(f.pesoCotto) > 0)
+      ? Number(f.pesoCotto) / 100 : null;
+    if(!fattore){
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = '';
+    const crudoIniziale = (gContesto != null && isFinite(gContesto) && Number(gContesto) > 0) ? Number(gContesto) : 100;
+    const crudoInput = document.getElementById('p-modal-cotto-crudo');
+    const cottoInput = document.getElementById('p-modal-cotto-cotto');
+    crudoInput.value = Math.round(crudoIniziale);
+    cottoInput.value = Math.round(crudoIniziale * fattore);
+    document.getElementById('p-modal-cotto-hint').textContent =
+      `100 g crudo ≈ ${cpFmt(f.pesoCotto)} g cotto` + (gContesto != null ? ' — quantità ripresa dal piano.' : '.');
+    crudoInput.oninput = () => {
+      const v = parseFloat(String(crudoInput.value).replace(',', '.'));
+      if(isFinite(v)) cottoInput.value = Math.round(v * fattore);
+    };
+    cottoInput.oninput = () => {
+      const v = parseFloat(String(cottoInput.value).replace(',', '.'));
+      if(isFinite(v)) crudoInput.value = Math.round(v / fattore);
+    };
+  }
   function aggiornaDettaglioAzioni(id){
     const btnLista = document.getElementById('p-modal-lista-btn');
     const inLista = cpAlimentoInLista(id);
@@ -4839,7 +4917,7 @@
     btnLista.classList.toggle('primary', inLista);
     btnLista.classList.toggle('ghost', !inLista);
   }
-  function apriDettaglioAlimento(id){
+  function apriDettaglioAlimento(id, gContesto){
     const f = CP_FOODS_BY_ID[id];
     if(!f) return;
     CP_DETTAGLIO_APERTO_ID = id;
@@ -4860,6 +4938,7 @@
     document.getElementById('p-modal-alimento-descrizione').textContent = f.descrizione || '—';
     renderDettaglioNutrienti(id);
     aggiornaDettaglioAzioni(id);
+    aggiornaDettaglioCotto(f, gContesto);
     document.getElementById('p-modal-alimento-view').style.display = '';
     document.getElementById('p-modal-confronto-ricerca-view').style.display = 'none';
     document.getElementById('p-modal-confronto-view').style.display = 'none';
@@ -4960,7 +5039,7 @@
       const items = CP_PLAN[cpState.day][m];
       const rows = items.map(item => {
         const f = CP_FOODS_BY_ID[item.id];
-        return `<div class="pp-row">
+        return `<div class="pp-row" data-id="${cpEsc(item.id)}" data-g="${item.g}">
           <span class="pp-dot"></span>
           <span class="pp-row-nome">${cpEsc(f ? cpNomeSenzaMarca(f.nome) : 'Alimento')}</span>
           <span class="pp-qty num">${cpFmt(item.g)} g</span>
@@ -4983,6 +5062,11 @@
       <div class="pp-day-sub num">${cpFmt(dayTotals.kcal)} kcal in totale</div>
       ${itemsHtml || '<p style="font-size:12.5px; color:var(--ink-faint);">Nessun pasto compilato per questo giorno.</p>'}
     `;
+    // Toccando un alimento del piano si apre la sua scheda, già con la quantità di quel pasto
+    // (utile soprattutto per "Da crudo a cotto": il paziente non deve ridigitare il peso).
+    cardEl.querySelectorAll('.pp-row').forEach(row => {
+      row.addEventListener('click', () => apriDettaglioAlimento(row.dataset.id, Number(row.dataset.g)));
+    });
 
     // Solo la media settimanale (niente minimi/massimi): kcal, carboidrati, proteine, grassi.
     const avg = cpComputeWeekAverage();
@@ -5025,7 +5109,7 @@
       const rows = items.map(item => {
         const f = CP_FOODS_BY_ID[item.id];
         const c = cpComputeItem(item);
-        return `<div style="display:flex; justify-content:space-between; gap:8px; font-size:12.5px; padding:3px 0;">
+        return `<div class="pns-row" data-id="${cpEsc(item.id)}" data-g="${item.g}" style="display:flex; justify-content:space-between; gap:8px; font-size:12.5px; padding:3px 0; cursor:pointer;">
           <span>${cpEsc(f ? f.nome : 'Alimento')} <span style="color:var(--ink-faint);">· ${cpFmt(item.g)} g</span></span>
           <span class="num" style="color:var(--ink-faint); flex:none;">${cpFmt(c.kcal)} kcal</span>
         </div>`;
@@ -5039,6 +5123,9 @@
       <div style="display:flex; justify-content:space-between; align-items:baseline; margin:12px 0 10px;"><h4 style="font-size:14px;">${cpState.day}</h4><span class="num" style="font-size:13px; color:var(--ink-faint);">${cpFmt(dayTotals.kcal)} kcal</span></div>
       ${mealsHtml || '<p style="font-size:12.5px; color:var(--ink-faint);">Nessun pasto compilato per questo giorno.</p>'}
     `;
+    document.getElementById('piano-struct-day-card').querySelectorAll('.pns-row').forEach(row => {
+      row.addEventListener('click', () => apriDettaglioAlimento(row.dataset.id, Number(row.dataset.g)));
+    });
 
     const avg = cpComputeWeekAverage();
     document.getElementById('piano-struct-week-summary').innerHTML = CP_NUTRIENTI.map(n => {
