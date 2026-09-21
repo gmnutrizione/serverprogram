@@ -4068,15 +4068,21 @@
         errEl.textContent = res.error || 'Errore durante il salvataggio.';
       }
     } catch(err){
-      // Come per il salvataggio di un nuovo paziente: a volte Google risponde con un errore di
-      // connessione anche se la rilevazione è stata comunque registrata. Prima di segnalare un
-      // errore, verifico se la rilevazione di questa data risulta già salvata.
+      // Come per il salvataggio di un nuovo paziente: quando lo specchio verso Google Sheets
+      // impiega più del solito (Google a volte risponde con qualche secondo di ritardo), la
+      // richiesta sembra fallita dal punto di vista del browser anche se il salvataggio su
+      // Supabase è comunque già andato a buon fine. Prima di segnalare un errore, verifico se la
+      // rilevazione di questa data risulta già salvata — e in OGNI caso, alla fine, ricarico
+      // comunque l'elenco/i grafici: così la scheda mostra sempre lo stato vero, invece di
+      // restare ferma a prima del salvataggio se anche la verifica ha impiegato troppo tempo.
       errEl.textContent = 'Verifica in corso, un attimo...';
       const salvata = await cpVerificaMisurazioneSalvata_(currentPatientCode, dataVal);
       if(salvata){
         await cpMisurazioneSalvataConSuccesso_();
       } else {
-        errEl.textContent = 'Errore di connessione: ' + err.message;
+        errEl.textContent = 'Errore di connessione: ' + err.message + ' — controlla tra qualche secondo, potrebbe essersi comunque salvata.';
+        await loadMisurazioni(currentPatientCode);
+        renderMisCategorie(); renderBigChart(); renderSparkGrid(); renderPanoramica();
       }
     }
     cpBottoneFinito_(btn);
@@ -4096,8 +4102,8 @@
     return m ? m[1] : String(v||'');
   }
   async function cpVerificaMisurazioneSalvata_(codice, dataVal){
-    for(let tentativo = 0; tentativo < 4; tentativo++){
-      await new Promise(r => setTimeout(r, 1500));
+    for(let tentativo = 0; tentativo < 7; tentativo++){
+      await new Promise(r => setTimeout(r, 2000));
       try{
         const res = await apiGet('misurazioni', { codice: SESSION.codice, paziente: codice });
         if(res.ok && (res.misurazioni||[]).some(m => cpSoloDataISO_(m.Data) === dataVal)) return true;
@@ -4260,18 +4266,21 @@
         errEl.textContent = res.error || 'Errore durante il salvataggio.';
       }
     } catch(err){
-      // A volte Google risponde con un errore di connessione (una pagina invece dei dati
-      // attesi) anche se il salvataggio sul foglio è comunque andato a buon fine, perché il
-      // server ha impiegato qualche secondo in più del solito a rispondere. Prima di mostrare
-      // un errore controlliamo se il paziente è stato effettivamente creato, riprovando per
-      // qualche secondo, così non si vede un errore per un'operazione riuscita.
+      // A volte lo specchio verso Google Sheets impiega qualche secondo in più del solito
+      // (Google può rispondere lentamente), e la richiesta sembra fallita dal punto di vista del
+      // browser anche se il salvataggio su Supabase è comunque già andato a buon fine. Prima di
+      // mostrare un errore controlliamo se il paziente è stato effettivamente creato, riprovando
+      // per qualche secondo — e in OGNI caso, alla fine, ricarico comunque l'elenco pazienti in
+      // sottofondo: così, anche se la verifica impiega troppo, il paziente compare non appena il
+      // salvataggio si conclude davvero, senza bisogno di ricaricare la pagina a mano.
       errEl.textContent = 'Verifica in corso, un attimo...';
       const creato = await cpVerificaPazienteCreato_(codice);
       if(creato){
         closeAddPatientModal();
         await loadPazienti(codice);
       } else {
-        errEl.textContent = 'Errore di connessione: ' + err.message;
+        errEl.textContent = 'Errore di connessione: ' + err.message + ' — controlla tra qualche secondo, potrebbe essersi comunque salvato.';
+        await loadPazienti(currentPatientCode);
       }
     }
     cpBottoneFinito_(btn);
@@ -4279,8 +4288,8 @@
   // Riprova a leggere l'elenco pazienti per qualche secondo, per capire se un salvataggio che
   // sembrava fallito (errore di connessione) è invece andato a buon fine sul foglio Google.
   async function cpVerificaPazienteCreato_(codice){
-    for(let tentativo = 0; tentativo < 4; tentativo++){
-      await new Promise(r => setTimeout(r, 1500));
+    for(let tentativo = 0; tentativo < 7; tentativo++){
+      await new Promise(r => setTimeout(r, 2000));
       try{
         const res = await apiGet('pazienti', { codice: SESSION.codice });
         if(res.ok && res.pazienti.some(p => codiceStr_(p.Codice) === codiceStr_(codice))) return true;
