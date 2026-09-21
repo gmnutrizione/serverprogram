@@ -1027,6 +1027,29 @@
   .cp-day-picker-btn .cp-dp-kcal{ font-family:var(--font-mono); font-size:11px; color:var(--ink-faint); }
 
   .cp-empty-note{ font-size:12.5px; color:var(--ink-faint); padding:6px 0; }
+
+  /* =========================================================== */
+  /* IL MIO DIARIO (diario alimentare personale, solo nutrizionista) */
+  /* =========================================================== */
+  .diario-day-nav{ display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:14px; }
+  .diario-day-nav-center{ display:flex; flex-direction:column; align-items:center; gap:4px; flex:1; min-width:0; }
+  .diario-data-label{ font-size:12.5px; font-weight:600; color:var(--ink); text-transform:capitalize; }
+  .diario-day-nav-center input[type="date"]{
+    font-family:var(--font-mono); font-size:12.5px; padding:5px 8px; border:1px solid var(--border);
+    border-radius:7px; background:var(--surface-raised); color:var(--ink);
+  }
+  .diario-oggi-btn{ font-size:11px; padding:3px 10px; height:auto; }
+  .diario-riepilogo{ display:flex; flex-direction:column; gap:9px; padding:12px 14px; background:var(--accent-soft); border-radius:var(--radius-s); margin-bottom:4px; }
+  .diario-storia{ margin-top:10px; display:flex; flex-direction:column; gap:5px; max-height:220px; overflow-y:auto; }
+  .diario-storia-row{
+    display:flex; align-items:center; justify-content:space-between; gap:10px; width:100%; text-align:left;
+    padding:8px 11px; border:1px solid var(--border-soft); border-radius:7px; background:var(--surface-raised);
+    color:var(--ink); cursor:pointer; font-family:inherit; font-size:12.5px;
+  }
+  .diario-storia-row:hover{ border-color:var(--accent); }
+  .diario-storia-row.active{ border-color:var(--accent); background:var(--accent-soft); }
+  .diario-storia-data{ font-weight:600; text-transform:capitalize; }
+  .diario-storia-info{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); white-space:nowrap; }
 </style>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -1049,6 +1072,10 @@
     <button class="btn ghost" id="btn-ricettario-nutri" style="display:none;" onclick="apriGestioneRicette()">
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 5C4 4 5 3.5 6.5 3.5C9 3.5 11 4.5 12 5.5C13 4.5 15 3.5 17.5 3.5C19 3.5 20 4 20 5V17C20 17 18.5 16.5 17 16.5C15 16.5 13 17.3 12 18.3C11 17.3 9 16.5 7 16.5C5.5 16.5 4 17 4 17V5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M12 5.5V18.3" stroke="currentColor" stroke-width="1.5"/></svg>
       Ricettario
+    </button>
+    <button class="btn ghost" id="btn-diario-nutri" style="display:none;" onclick="apriDiario()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M6 4C6 2.9 6.9 2 8 2H18C19.1 2 20 2.9 20 4V20C20 21.1 19.1 22 18 22H8C6.9 22 6 21.1 6 20" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 4C4.9 4 4 4.9 4 6V18C4 19.1 4.9 20 6 20" stroke="currentColor" stroke-width="1.5"/><path d="M9 7.5H16M9 11.5H16M9 15.5H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Il mio diario
     </button>
     <button class="btn-logout" id="btn-logout" style="display:none;" onclick="logout()">
       <svg viewBox="0 0 24 24" fill="none"><path d="M15 17L20 12L15 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12H9M9 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -1371,6 +1398,56 @@
           <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px;">
             <button class="btn ghost" type="button" onclick="chiudiFormRicetta()">Annulla</button>
             <button class="btn primary" type="button" id="radm-btn-salva" onclick="salvaFormRicetta()">Salva ricetta</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Il mio diario — diario alimentare personale del nutrizionista, non collegato ai pazienti -->
+    <div class="modal-overlay" id="diario-overlay" style="display:none;" onclick="if(event.target===this) chiudiDiario();">
+      <div class="modal-card" style="max-width:640px;">
+        <!-- Vista giorno -->
+        <div id="diario-list-view">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+            <h3 style="margin:0;">Il mio diario</h3>
+            <button class="btn small ghost" type="button" onclick="diarioApriEditorObiettivo_()">Obiettivo</button>
+          </div>
+          <p style="margin:0 0 14px;">Il tuo diario alimentare personale, giorno per giorno — non è collegato ai pazienti né al foglio Google.</p>
+
+          <div class="diario-day-nav">
+            <button class="btn small ghost" type="button" onclick="diarioGiornoPrec_()" title="Giorno precedente">‹</button>
+            <div class="diario-day-nav-center">
+              <span id="diario-data-label" class="diario-data-label"></span>
+              <input type="date" id="diario-data-input" onchange="diarioVaiA_(this.value)">
+              <button class="btn small ghost diario-oggi-btn" type="button" onclick="diarioVaiOggi_()">Oggi</button>
+            </div>
+            <button class="btn small ghost" type="button" onclick="diarioGiornoSucc_()" title="Giorno successivo">›</button>
+          </div>
+
+          <p id="diario-loading" class="cp-empty-note" style="display:none;">Caricamento…</p>
+
+          <div id="diario-riepilogo" class="diario-riepilogo"></div>
+
+          <div id="diario-pasti" class="cp-meal-list" style="grid-template-columns:1fr; margin-top:14px;"></div>
+
+          <div style="margin-top:16px;">
+            <button class="btn ghost small" type="button" id="diario-storia-toggle" onclick="diarioToggleStoria_()">Giorni precedenti ▾</button>
+            <div id="diario-storia" class="diario-storia" style="display:none;"></div>
+          </div>
+
+          <div style="display:flex; justify-content:flex-end; margin-top:16px;">
+            <button class="btn ghost" type="button" onclick="chiudiDiario()">Chiudi</button>
+          </div>
+        </div>
+
+        <!-- Editor obiettivo -->
+        <div id="diario-obiettivo-view" style="display:none;">
+          <h3 style="margin-top:0;">Obiettivo giornaliero</h3>
+          <p>Il tuo target personale di riferimento, confrontato ogni giorno con quello che registri nel diario.</p>
+          <div class="field-grid" style="grid-template-columns:repeat(2,1fr);" id="diario-obiettivo-fields"></div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap;">
+            <button class="btn ghost" type="button" onclick="diarioChiudiEditorObiettivo_()">Annulla</button>
+            <button class="btn primary" type="button" id="diario-obiettivo-salva-btn" onclick="diarioSalvaObiettivo_()">Salva obiettivo</button>
           </div>
         </div>
       </div>
@@ -2229,6 +2306,14 @@
     salvaModello:            { fn:'salva_modello', args:b => ({ p_codice: b.codice, p_nome: b.nome, p_descrizione: b.descrizione, p_target: b.target, p_day: b.day }) },
     salvaRicetta:            { fn:'salva_ricetta', args:b => ({ p_codice: b.codice, p_riga: b.riga || null, p_nome: b.nome, p_categoria: b.categoria, p_foto: b.foto, p_porzioni: b.porzioni, p_ingredienti: b.ingredienti, p_procedimento: b.procedimento, p_commento: b.commento }) },
     eliminaRicetta:          { fn:'elimina_ricetta', args:b => ({ p_codice: b.codice, p_riga: b.riga }) },
+    // ---- Il mio diario (personale, solo nutrizionista — vedi 05_diario_personale.sql) ----
+    diarioVoci:            { fn:'diario_voci',             args:p => ({ p_codice: p.codice, p_data: p.data }) },
+    diarioGiorni:          { fn:'diario_giorni',           args:p => ({ p_codice: p.codice }) },
+    diarioAggiungi:        { fn:'diario_aggiungi',         args:b => ({ p_codice: b.codice, p_data: b.data, p_pasto: b.pasto, p_alimento_id: b.alimentoId, p_grammi: b.grammi }) },
+    diarioModificaGrammi:  { fn:'diario_modifica_grammi',  args:b => ({ p_codice: b.codice, p_riga_id: b.rigaId, p_grammi: b.grammi }) },
+    diarioElimina:         { fn:'diario_elimina',          args:b => ({ p_codice: b.codice, p_riga_id: b.rigaId }) },
+    diarioObiettivoLeggi:  { fn:'diario_obiettivo_leggi',  args:p => ({ p_codice: p.codice }) },
+    diarioObiettivoSalva:  { fn:'diario_obiettivo_salva',  args:b => ({ p_codice: b.codice, p_obiettivo: b.obiettivo }) },
   };
 
   async function apiRpcChiamata_(action, params){
@@ -5753,6 +5838,407 @@
     }
   }
 
+  /* ================= IL MIO DIARIO (personale, solo nutrizionista) =================
+     Diario alimentare del nutrizionista stesso, sul modello di MyFitnessPal: alimenti presi dallo
+     stesso database di "Crea piano", raggruppati per pasto, un giorno alla volta. Salvato su Supabase
+     (non in memoria locale del browser), NON specchiato su Google Sheets: è uno strumento personale,
+     non un dato clinico di un paziente. Ogni aggiunta/modifica/rimozione va subito sul server, non
+     serve un pulsante "Salva" — come in un diario vero. */
+  let DIARIO_DATA = null;          // 'YYYY-MM-DD' del giorno visualizzato
+  let DIARIO_VOCI = [];            // voci del giorno visualizzato ({ id, pasto, alimentoId, grammi })
+  let DIARIO_GIORNI_CACHE = null;  // elenco "giorni precedenti" (con totale kcal), null finché non richiesto
+  let DIARIO_OBIETTIVO = null;     // target personale, nelle chiavi di CP_NUTRIENTI (kcal, prot, carb, ...)
+
+  // Le chiavi usate da CP_NUTRIENTI (prot, carb, grassiSaturi...) non coincidono con quelle salvate su
+  // Supabase per l'obiettivo personale (proteine, carboidrati...): questa mappa traduce nei due sensi,
+  // così il resto del codice del diario può usare sempre le chiavi di CP_NUTRIENTI come ovunque nel programma.
+  const DIARIO_OBIETTIVO_FIELD = { kcal:'kcal', prot:'proteine', carb:'carboidrati', zuccheri:'zuccheri', grassi:'grassi', grassiSaturi:'grassiSaturi', fibra:'fibra', sale:'sale' };
+  function diarioObiettivoDaServer_(o){
+    const out = cpZeroNutrienti();
+    CP_NUTRIENTI.forEach(n => { out[n.key] = (o && +o[DIARIO_OBIETTIVO_FIELD[n.key]]) || 0; });
+    return out;
+  }
+  function diarioObiettivoPerServer_(o){
+    const out = {};
+    CP_NUTRIENTI.forEach(n => { out[DIARIO_OBIETTIVO_FIELD[n.key]] = Math.max(0, +o[n.key] || 0); });
+    return out;
+  }
+
+  // ---- date: sempre con i "get" locali (getFullYear/getMonth/getDate), MAI toISOString() — che
+  // convertirebbe in UTC e, vicino alla mezzanotte, potrebbe far scivolare la data sbagliata a
+  // seconda del fuso orario del dispositivo.
+  function diarioISO_(dt){
+    return dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0') + '-' + String(dt.getDate()).padStart(2,'0');
+  }
+  function diarioOggiISO_(){ return diarioISO_(new Date()); }
+  function diarioSommaGiorni_(iso, delta){
+    const [y,m,d] = iso.split('-').map(Number);
+    const dt = new Date(y, m-1, d);
+    dt.setDate(dt.getDate() + delta);
+    return diarioISO_(dt);
+  }
+
+  function diarioVociPerPasto_(pasto){ return DIARIO_VOCI.filter(v => v.pasto === pasto); }
+  function diarioComputeVoce_(v){ return cpComputeItem({ id:v.alimentoId, g:v.grammi }); }
+  function diarioComputeMeal_(pasto){
+    return diarioVociPerPasto_(pasto).reduce((acc, v) => {
+      const c = diarioComputeVoce_(v);
+      CP_NUTRIENTI.forEach(n => { acc[n.key] += c[n.key]; });
+      return acc;
+    }, cpZeroNutrienti());
+  }
+  function diarioComputeGiorno_(){
+    return CP_MEALS.reduce((acc, m) => {
+      const c = diarioComputeMeal_(m);
+      CP_NUTRIENTI.forEach(n => { acc[n.key] += c[n.key]; });
+      return acc;
+    }, cpZeroNutrienti());
+  }
+
+  async function apriDiario(){
+    document.getElementById('diario-overlay').style.display = 'flex';
+    document.getElementById('diario-list-view').style.display = '';
+    document.getElementById('diario-obiettivo-view').style.display = 'none';
+    DIARIO_GIORNI_CACHE = null;
+    document.getElementById('diario-storia').style.display = 'none';
+    document.getElementById('diario-storia-toggle').textContent = 'Giorni precedenti ▾';
+    await cpLoadFoods(); // di solito già pronto (caricato in sottofondo all'ingresso) — qui solo per sicurezza
+    if(CP_FOODS_ERROR) showToast(CP_FOODS_ERROR);
+    if(DIARIO_OBIETTIVO === null){
+      try{
+        const res = await apiGet('diarioObiettivoLeggi', { codice: SESSION.codice });
+        DIARIO_OBIETTIVO = res.ok ? diarioObiettivoDaServer_(res.obiettivo) : cpZeroNutrienti();
+        if(!res.ok) showToast(res.error || "Errore nel caricamento dell'obiettivo.");
+      } catch(err){
+        DIARIO_OBIETTIVO = cpZeroNutrienti();
+        showToast('Errore di connessione: ' + err.message);
+      }
+    }
+    await diarioVaiA_(DIARIO_DATA || diarioOggiISO_());
+  }
+  function chiudiDiario(){
+    document.getElementById('diario-overlay').style.display = 'none';
+  }
+
+  async function diarioVaiA_(iso){
+    if(!iso) return;
+    DIARIO_DATA = iso;
+    document.getElementById('diario-data-input').value = iso;
+    const [y,m,d] = iso.split('-').map(Number);
+    document.getElementById('diario-data-label').textContent = new Date(y, m-1, d).toLocaleDateString('it-IT', { weekday:'long', day:'numeric', month:'long' });
+    await diarioCaricaVoci_();
+  }
+  function diarioGiornoPrec_(){ diarioVaiA_(diarioSommaGiorni_(DIARIO_DATA, -1)); }
+  function diarioGiornoSucc_(){ diarioVaiA_(diarioSommaGiorni_(DIARIO_DATA, 1)); }
+  function diarioVaiOggi_(){ diarioVaiA_(diarioOggiISO_()); }
+
+  async function diarioCaricaVoci_(){
+    const loadingEl = document.getElementById('diario-loading');
+    loadingEl.style.display = '';
+    document.getElementById('diario-pasti').innerHTML = '';
+    document.getElementById('diario-riepilogo').innerHTML = '';
+    try{
+      const res = await apiGet('diarioVoci', { codice: SESSION.codice, data: DIARIO_DATA });
+      if(res.ok){
+        DIARIO_VOCI = (res.voci||[]).map(v => ({ id:v.id, pasto:v.pasto, alimentoId:v.alimentoId, grammi:Number(v.grammi)||0 }));
+      } else {
+        DIARIO_VOCI = [];
+        showToast(res.error || 'Errore nel caricamento del diario.');
+      }
+    } catch(err){
+      DIARIO_VOCI = [];
+      showToast('Errore di connessione: ' + err.message);
+    }
+    loadingEl.style.display = 'none';
+    diarioRenderPasti_();
+    diarioRenderRiepilogo_();
+  }
+
+  function diarioRenderRiepilogo_(){
+    const totals = diarioComputeGiorno_();
+    document.getElementById('diario-riepilogo').innerHTML = CP_NUTRIENTI.map(n => {
+      const actual = totals[n.key], target = DIARIO_OBIETTIVO ? DIARIO_OBIETTIVO[n.key] : 0;
+      const unit = n.key==='kcal' ? 'kcal' : n.unit;
+      const cls = cpDeviationClass(actual, target);
+      const pct = target ? Math.min(100, (actual / target) * 100) : 0;
+      return `
+        <div class="cp-bar-row">
+          <div class="cp-bar-row-head">
+            <span class="label">${n.label}</span>
+            <span class="vals num"><b>${cpFmt(actual)}</b> / ${target ? cpFmt(target) : '—'} ${unit}</span>
+          </div>
+          <div class="cp-bar-track"><div class="cp-bar-fill ${cls}" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
+  }
+
+  function diarioRenderPasti_(){
+    const el = document.getElementById('diario-pasti');
+    const searchDisabled = !CP_FOODS || CP_FOODS.length === 0;
+    el.innerHTML = CP_MEALS.map(m => {
+      const voci = diarioVociPerPasto_(m);
+      const totals = diarioComputeMeal_(m);
+      const rows = voci.length === 0
+        ? `<div class="cp-meal-empty">Nessun alimento — cerca un alimento qui sotto per aggiungerlo.</div>`
+        : voci.map(v => {
+            const f = CP_FOODS_BY_ID[v.alimentoId];
+            const c = diarioComputeVoce_(v);
+            return `
+              <div class="cp-meal-item">
+                <div class="cp-meal-item-name">${cpEsc(f ? f.nome : 'Alimento non più nel database')}</div>
+                <div class="cp-grams-field-wrap" style="display:flex; align-items:center; gap:3px;">
+                  <input type="number" class="cp-grams-field diario-grams-field" min="0" step="5" value="${v.grammi}" data-riga="${cpEsc(v.id)}">
+                  <span style="font-size:11px; color:var(--ink-faint);">g</span>
+                </div>
+                <div class="cp-meal-item-kcal">${cpFmt(c.kcal)}</div>
+                <div class="cp-item-macros">
+                  <span title="Proteine"><b>${cpFmt(c.prot)}</b>P</span>
+                  <span title="Grassi"><b>${cpFmt(c.grassi)}</b>F</span>
+                  <span title="Carboidrati"><b>${cpFmt(c.carb)}</b>C</span>
+                </div>
+                <button type="button" class="cp-btn-remove diario-btn-remove" data-riga="${cpEsc(v.id)}" title="Rimuovi">${CP_ICON_X}</button>
+              </div>`;
+          }).join('');
+      return `
+        <div class="cp-meal-card" data-pasto="${cpEsc(m)}">
+          <div class="cp-meal-head"><div class="cp-meal-name">${m}</div></div>
+          <div class="cp-meal-items">${rows}</div>
+          <div class="cp-meal-search">
+            ${searchDisabled
+              ? `<div class="cp-empty-note">Ricerca alimenti non disponibile — database non collegato.</div>`
+              : `<div class="cp-meal-search-input-wrap" style="position:relative;">
+                  <input type="text" class="cp-meal-search-input diario-search-input" placeholder="Cerca alimento da aggiungere…" data-pasto="${cpEsc(m)}" autocomplete="off">
+                </div>
+                <div class="cp-meal-suggestions" data-pasto="${cpEsc(m)}" hidden></div>`}
+          </div>
+          <div class="cp-meal-stats">
+            ${CP_NUTRIENTI.map(n => `<div class="cp-meal-stat"><div class="cp-ms-val num" data-key="${n.key}">${cpFmt(totals[n.key])}</div><div class="cp-ms-label">${n.label}</div></div>`).join('')}
+          </div>
+        </div>`;
+    }).join('');
+
+    // grammi: la UI si aggiorna ad ogni tasto, il salvataggio sul server avviene solo al blur/invio
+    // (evita una chiamata di rete ad ogni singola cifra digitata).
+    el.querySelectorAll('.diario-grams-field').forEach(inp => {
+      inp.addEventListener('input', () => {
+        const rigaId = inp.dataset.riga;
+        const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
+        if(!voce) return;
+        voce.grammi = Math.max(0, +inp.value || 0);
+        const c = diarioComputeVoce_(voce);
+        const itemEl = inp.closest('.cp-meal-item');
+        itemEl.querySelector('.cp-meal-item-kcal').textContent = cpFmt(c.kcal);
+        const macroSpans = itemEl.querySelectorAll('.cp-item-macros b');
+        macroSpans[0].textContent = cpFmt(c.prot);
+        macroSpans[1].textContent = cpFmt(c.grassi);
+        macroSpans[2].textContent = cpFmt(c.carb);
+        const card = inp.closest('.cp-meal-card');
+        const mealTotals = diarioComputeMeal_(card.dataset.pasto);
+        CP_NUTRIENTI.forEach(n => {
+          card.querySelector(`.cp-ms-val[data-key="${n.key}"]`).textContent = cpFmt(mealTotals[n.key]);
+        });
+        diarioRenderRiepilogo_();
+      });
+      inp.addEventListener('change', async () => {
+        const rigaId = inp.dataset.riga;
+        const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
+        if(!voce) return;
+        try{
+          const res = await apiPost('diarioModificaGrammi', { codice: SESSION.codice, rigaId, grammi: voce.grammi });
+          if(!res.ok){ showToast(res.error || 'Errore nel salvataggio della quantità.'); }
+          DIARIO_GIORNI_CACHE = null; // il totale kcal del giorno nello storico non è più aggiornato
+        } catch(err){ showToast('Errore di connessione: ' + err.message); }
+      });
+    });
+
+    el.querySelectorAll('.diario-btn-remove').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const rigaId = btn.dataset.riga;
+        btn.disabled = true;
+        try{
+          const res = await apiPost('diarioElimina', { codice: SESSION.codice, rigaId });
+          if(res.ok){
+            DIARIO_VOCI = DIARIO_VOCI.filter(x => String(x.id) !== String(rigaId));
+            DIARIO_GIORNI_CACHE = null;
+            diarioRenderPasti_();
+            diarioRenderRiepilogo_();
+            if(document.getElementById('diario-storia').style.display !== 'none') diarioRenderStoria_();
+          } else {
+            showToast(res.error || "Errore durante l'eliminazione.");
+            btn.disabled = false;
+          }
+        } catch(err){
+          showToast('Errore di connessione: ' + err.message);
+          btn.disabled = false;
+        }
+      });
+    });
+
+    el.querySelectorAll('.diario-search-input').forEach(inp => {
+      const pasto = inp.dataset.pasto;
+      const box = el.querySelector(`.cp-meal-suggestions[data-pasto="${CSS.escape(pasto)}"]`);
+      let currentMatches = [];
+      let highlighted = -1;
+      const selectFood = async (f) => {
+        if(!f) return;
+        inp.value = '';
+        box.hidden = true;
+        try{
+          const res = await apiPost('diarioAggiungi', { codice: SESSION.codice, data: DIARIO_DATA, pasto, alimentoId: f.id, grammi: f.porzione });
+          if(res.ok){
+            DIARIO_VOCI.push({ id: res.id, pasto, alimentoId: f.id, grammi: f.porzione });
+            DIARIO_GIORNI_CACHE = null;
+            diarioRenderPasti_();
+            diarioRenderRiepilogo_();
+            if(document.getElementById('diario-storia').style.display !== 'none') diarioRenderStoria_();
+          } else {
+            showToast(res.error || "Errore durante l'aggiunta.");
+          }
+        } catch(err){
+          showToast('Errore di connessione: ' + err.message);
+        }
+      };
+      const updateHighlight = () => {
+        const rows = box.querySelectorAll('.cp-suggestion-item');
+        rows.forEach((row, i) => {
+          row.classList.toggle('active', i === highlighted);
+          if(i === highlighted) row.scrollIntoView({ block:'nearest' });
+        });
+      };
+      const renderSuggestions = () => {
+        const term = inp.value.trim().toLowerCase();
+        highlighted = -1;
+        currentMatches = [];
+        if(term === ''){ box.hidden = true; box.innerHTML = ''; return; }
+        const matches = (CP_FOODS||[]).filter(f => f.nome.toLowerCase().startsWith(term)).slice(0, 7);
+        currentMatches = matches;
+        if(matches.length === 0){
+          box.innerHTML = `<div class="cp-suggestion-empty">Nessun alimento trovato per "${cpEsc(inp.value.trim())}"</div>`;
+        } else {
+          box.innerHTML = matches.map(f => `
+            <div class="cp-suggestion-item" data-id="${cpEsc(f.id)}">
+              <span class="cp-suggestion-name"><b>${cpEsc(f.nome.slice(0, term.length))}</b>${cpEsc(f.nome.slice(term.length))}</span>
+              <span class="cp-suggestion-kcal">porzione rif. ${cpFmt(f.porzione)} g · ${cpFmt(f.kcal*f.porzione/100)} kcal</span>
+            </div>`).join('');
+          box.querySelectorAll('.cp-suggestion-item').forEach(row => {
+            row.addEventListener('mousedown', (e) => {
+              e.preventDefault();
+              selectFood(CP_FOODS_BY_ID[row.dataset.id]);
+            });
+          });
+        }
+        box.hidden = false;
+      };
+      inp.addEventListener('input', renderSuggestions);
+      inp.addEventListener('focus', () => { if(inp.value.trim() !== '') renderSuggestions(); });
+      inp.addEventListener('blur', () => { setTimeout(() => { box.hidden = true; }, 120); });
+      inp.addEventListener('keydown', (e) => {
+        if(box.hidden || currentMatches.length === 0){
+          if(e.key === 'ArrowDown' && inp.value.trim() !== ''){ renderSuggestions(); }
+          return;
+        }
+        if(e.key === 'ArrowDown'){
+          e.preventDefault();
+          highlighted = Math.min(highlighted + 1, currentMatches.length - 1);
+          updateHighlight();
+        } else if(e.key === 'ArrowUp'){
+          e.preventDefault();
+          highlighted = Math.max(highlighted - 1, 0);
+          updateHighlight();
+        } else if(e.key === 'Enter'){
+          if(highlighted >= 0){
+            e.preventDefault();
+            selectFood(currentMatches[highlighted]);
+          } else if(currentMatches.length === 1){
+            e.preventDefault();
+            selectFood(currentMatches[0]);
+          }
+        } else if(e.key === 'Escape'){
+          box.hidden = true;
+        }
+      });
+    });
+  }
+
+  function diarioToggleStoria_(){
+    const el = document.getElementById('diario-storia');
+    const btn = document.getElementById('diario-storia-toggle');
+    const opening = el.style.display === 'none';
+    el.style.display = opening ? '' : 'none';
+    btn.textContent = opening ? 'Giorni precedenti ▴' : 'Giorni precedenti ▾';
+    if(opening) diarioRenderStoria_();
+  }
+  async function diarioCaricaGiorni_(){
+    if(DIARIO_GIORNI_CACHE !== null) return DIARIO_GIORNI_CACHE;
+    try{
+      const res = await apiGet('diarioGiorni', { codice: SESSION.codice });
+      DIARIO_GIORNI_CACHE = res.ok ? res.giorni : [];
+      if(!res.ok) showToast(res.error || 'Errore nel caricamento dei giorni precedenti.');
+    } catch(err){
+      DIARIO_GIORNI_CACHE = [];
+      showToast('Errore di connessione: ' + err.message);
+    }
+    return DIARIO_GIORNI_CACHE;
+  }
+  async function diarioRenderStoria_(){
+    const el = document.getElementById('diario-storia');
+    el.innerHTML = `<p class="cp-empty-note">Caricamento…</p>`;
+    const giorni = await diarioCaricaGiorni_();
+    if(!giorni.length){
+      el.innerHTML = `<p class="cp-empty-note">Nessun giorno registrato prima di oggi.</p>`;
+      return;
+    }
+    el.innerHTML = giorni.map(g => {
+      const [y,m,d] = g.data.split('-').map(Number);
+      const label = new Date(y, m-1, d).toLocaleDateString('it-IT', { weekday:'short', day:'numeric', month:'short' });
+      return `
+        <button type="button" class="diario-storia-row ${g.data===DIARIO_DATA?'active':''}" data-data="${cpEsc(g.data)}">
+          <span class="diario-storia-data">${label}</span>
+          <span class="diario-storia-info">${g.voci} alimenti · ${cpFmt(g.kcal)} kcal</span>
+        </button>`;
+    }).join('');
+    el.querySelectorAll('.diario-storia-row').forEach(row => {
+      row.addEventListener('click', () => diarioVaiA_(row.dataset.data));
+    });
+  }
+
+  function diarioApriEditorObiettivo_(){
+    document.getElementById('diario-list-view').style.display = 'none';
+    document.getElementById('diario-obiettivo-view').style.display = '';
+    document.getElementById('diario-obiettivo-fields').innerHTML = CP_NUTRIENTI.map(n => `
+      <div class="field"><label>${n.label}${n.unit ? ' ('+n.unit+')' : ''}</label><input type="number" id="diario-obt-${n.key}" min="0"></div>
+    `).join('');
+    CP_NUTRIENTI.forEach(n => {
+      document.getElementById('diario-obt-'+n.key).value = Math.round(DIARIO_OBIETTIVO[n.key]) || '';
+    });
+  }
+  function diarioChiudiEditorObiettivo_(){
+    document.getElementById('diario-obiettivo-view').style.display = 'none';
+    document.getElementById('diario-list-view').style.display = '';
+  }
+  async function diarioSalvaObiettivo_(){
+    const nuovo = cpZeroNutrienti();
+    CP_NUTRIENTI.forEach(n => {
+      nuovo[n.key] = Math.max(0, +document.getElementById('diario-obt-'+n.key).value || 0);
+    });
+    const btn = document.getElementById('diario-obiettivo-salva-btn');
+    cpBottoneCaricando_(btn);
+    try{
+      const res = await apiPost('diarioObiettivoSalva', { codice: SESSION.codice, obiettivo: diarioObiettivoPerServer_(nuovo) });
+      if(res.ok){
+        DIARIO_OBIETTIVO = nuovo;
+        diarioChiudiEditorObiettivo_();
+        diarioRenderRiepilogo_();
+        showToast('Obiettivo aggiornato');
+      } else {
+        showToast(res.error || "Errore durante il salvataggio dell'obiettivo.");
+      }
+    } catch(err){
+      showToast('Errore di connessione: ' + err.message);
+    }
+    cpBottoneFinito_(btn);
+  }
+
   async function enterPazienteView(){
     const p = SESSION.paziente;
     document.getElementById('p-home-greeting').textContent = 'Ciao' + (p.Nome ? ' '+p.Nome.split(' ')[0] : '');
@@ -5832,6 +6318,7 @@
       document.getElementById('view-nutri').style.display = 'grid';
       document.getElementById('view-paziente').style.display = 'none';
       document.getElementById('btn-ricettario-nutri').style.display = 'flex';
+      document.getElementById('btn-diario-nutri').style.display = 'flex';
       document.getElementById('topbar-brand-name').textContent = 'GM Program - Gestionale pazienti';
       document.getElementById('topbar-brand-tag').textContent = 'Piano alimentare & monitoraggio pazienti';
       document.getElementById('topbar-brand-tag').style.display = '';
@@ -5865,6 +6352,7 @@
     document.getElementById('topbar').style.display = 'none';
     document.getElementById('btn-logout').style.display = 'none';
     document.getElementById('btn-ricettario-nutri').style.display = 'none';
+    document.getElementById('btn-diario-nutri').style.display = 'none';
     document.getElementById('topbar-brand-name').textContent = 'GM - Nutrizione e Benessere';
     document.getElementById('topbar-brand-tag').style.display = 'none';
     document.getElementById('login-code').value = '';
