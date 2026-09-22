@@ -1157,6 +1157,10 @@
       <svg viewBox="0 0 24 24" fill="none"><path d="M6 4C6 2.9 6.9 2 8 2H18C19.1 2 20 2.9 20 4V20C20 21.1 19.1 22 18 22H8C6.9 22 6 21.1 6 20" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><path d="M6 4C4.9 4 4 4.9 4 6V18C4 19.1 4.9 20 6 20" stroke="currentColor" stroke-width="1.5"/><path d="M9 7.5H16M9 11.5H16M9 15.5H13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       Il mio diario
     </button>
+    <button class="btn ghost" id="btn-alimento-nutri" style="display:none;" onclick="apriAggiungiAlimento()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M4 5V19M7 5V19M9.5 5V19M13 5V19M15.5 5V19M16.5 5V19M20 5V19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      Aggiungi alimento
+    </button>
     <button class="btn-logout" id="btn-logout" style="display:none;" onclick="logout()">
       <svg viewBox="0 0 24 24" fill="none"><path d="M15 17L20 12L15 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12H9M9 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Esci
@@ -1533,6 +1537,99 @@
             <button class="btn primary" type="button" id="diario-obiettivo-salva-btn" onclick="diarioSalvaObiettivo_()">Salva obiettivo</button>
           </div>
         </div>
+      </div>
+    </div>
+
+    <!-- =========================================================== -->
+    <!-- AGGIUNGI ALIMENTO DA CODICE A BARRE                           -->
+    <!-- =========================================================== -->
+    <div class="modal-overlay" id="abc-overlay" style="display:none;" onclick="if(event.target===this) chiudiAggiungiAlimento();">
+      <div class="modal-card" style="max-width:560px;">
+
+        <!-- Vista 1: cerca per codice a barre -->
+        <div id="abc-view-cerca">
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+            <h3 style="margin:0;">Aggiungi alimento</h3>
+            <button class="btn small ghost" type="button" onclick="chiudiAggiungiAlimento()" title="Chiudi" aria-label="Chiudi" style="padding:6px 9px;">✕</button>
+          </div>
+          <p style="margin:0 0 14px;">Scansiona il codice a barre del prodotto, o inserisci il numero a mano: se lo trovo nel database pubblico dei prodotti, precompilo io ingredienti e valori nutrizionali — tu controlli e salvi.</p>
+
+          <div id="abc-camera-wrap" style="display:none; margin-bottom:12px;">
+            <div id="abc-camera-reader" style="width:100%; border-radius:var(--radius-s); overflow:hidden; background:#000;"></div>
+            <button class="btn ghost small" type="button" onclick="abcFermaScanner_()" style="margin-top:8px;">Annulla scansione</button>
+          </div>
+
+          <form onsubmit="return abcSubmitCodice_(event)" style="display:flex; gap:8px; margin-bottom:10px;" id="abc-form-codice">
+            <input type="text" id="abc-barcode-input" inputmode="numeric" autocomplete="off" placeholder="Codice a barre (es. 8001505005707)" style="flex:1;">
+            <button class="btn primary" type="submit">Cerca</button>
+          </form>
+          <button class="btn ghost" type="button" id="abc-btn-scan" onclick="abcAvviaScanner_()" style="width:100%; justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" style="width:16px; height:16px;"><path d="M4 8V5C4 4.4 4.4 4 5 4H8M16 4H19C19.6 4 20 4.4 20 5V8M20 16V19C20 19.6 19.6 20 19 20H16M8 20H5C4.4 20 4 19.6 4 19V16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 12H20" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            Scansiona con la fotocamera
+          </button>
+
+          <p id="abc-stato" class="cp-empty-note" style="display:none; margin-top:12px;"></p>
+        </div>
+
+        <!-- Vista 2: alimento già presente nel database -->
+        <div id="abc-view-trovato" style="display:none;">
+          <h3 style="margin-top:0;">Alimento già presente</h3>
+          <p id="abc-trovato-testo">—</p>
+          <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:14px;">
+            <button class="btn ghost" type="button" onclick="abcTornaCerca_()">Chiudi</button>
+            <button class="btn primary" type="button" onclick="abcContinuaComeNuovo_()">Aggiungi comunque come nuovo</button>
+          </div>
+        </div>
+
+        <!-- Vista 3: conferma/modifica i dati prima di salvare -->
+        <div id="abc-view-conferma" style="display:none;">
+          <h3 style="margin-top:0;">Controlla e salva</h3>
+          <p id="abc-conferma-fonte" class="cp-empty-note" style="margin-bottom:14px;"></p>
+
+          <div style="display:flex; gap:12px; align-items:flex-start; margin-bottom:14px;">
+            <div class="alimento-thumb" id="abc-thumb" style="display:none; flex:none;"></div>
+            <div class="field-grid" style="grid-template-columns:1fr 1fr; flex:1;">
+              <div class="field" style="grid-column:1/-1;"><label>Nome</label><input type="text" id="abc-f-nome"></div>
+              <div class="field"><label>Marca</label><input type="text" id="abc-f-marca"></div>
+              <div class="field"><label>Categoria</label><input type="text" id="abc-f-categoria" placeholder="Es. Latticini e formaggi"></div>
+            </div>
+          </div>
+
+          <p style="font-size:12px; color:var(--ink-faint); margin:0 0 6px;">Valori per 100 g</p>
+          <div class="field-grid" style="grid-template-columns:repeat(4,1fr);">
+            <div class="field"><label>Kcal</label><input type="number" step="any" id="abc-f-kcal"></div>
+            <div class="field"><label>Proteine (g)</label><input type="number" step="any" id="abc-f-proteine"></div>
+            <div class="field"><label>Carboidrati (g)</label><input type="number" step="any" id="abc-f-carboidrati"></div>
+            <div class="field"><label>di cui zuccheri (g)</label><input type="number" step="any" id="abc-f-zuccheri"></div>
+            <div class="field"><label>Grassi (g)</label><input type="number" step="any" id="abc-f-grassi"></div>
+            <div class="field"><label>di cui saturi (g)</label><input type="number" step="any" id="abc-f-grassisaturi"></div>
+            <div class="field"><label>Fibra (g)</label><input type="number" step="any" id="abc-f-fibra"></div>
+            <div class="field"><label>Sale (g)</label><input type="number" step="any" id="abc-f-sale"></div>
+          </div>
+
+          <div class="field-grid" style="grid-template-columns:1fr;">
+            <div class="field"><label>Porzione di riferimento (g)</label><input type="number" step="any" id="abc-f-porzione" value="100"></div>
+            <div class="field"><label>Ingredienti</label><textarea id="abc-f-ingredienti" rows="2"></textarea></div>
+            <div class="field"><label>Descrizione (facoltativa)</label><textarea id="abc-f-descrizione" rows="2"></textarea></div>
+          </div>
+
+          <div class="login-error" id="abc-conferma-errore"></div>
+          <div style="display:flex; gap:10px; justify-content:flex-end; margin-top:14px; flex-wrap:wrap;">
+            <button class="btn ghost" type="button" onclick="abcTornaCerca_()">Indietro</button>
+            <button class="btn primary" type="button" id="abc-btn-salva" onclick="abcSalva_()">Salva alimento</button>
+          </div>
+        </div>
+
+        <!-- Vista 4: salvato -->
+        <div id="abc-view-salvato" style="display:none;">
+          <h3 style="margin-top:0;">Alimento salvato</h3>
+          <p id="abc-salvato-testo">—</p>
+          <div style="display:flex; gap:10px; justify-content:flex-end; flex-wrap:wrap; margin-top:14px;">
+            <button class="btn ghost" type="button" onclick="chiudiAggiungiAlimento()">Fatto, chiudi</button>
+            <button class="btn primary" type="button" onclick="abcTornaCerca_()">Aggiungi un altro prodotto</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -2401,6 +2498,15 @@
     diarioElimina:         { fn:'diario_elimina',          args:b => ({ p_codice: b.codice, p_riga_id: b.rigaId }) },
     diarioObiettivoLeggi:  { fn:'diario_obiettivo_leggi',  args:p => ({ p_codice: p.codice }) },
     diarioObiettivoSalva:  { fn:'diario_obiettivo_salva',  args:b => ({ p_codice: b.codice, p_obiettivo: b.obiettivo }) },
+    // ---- Aggiungi alimento da codice a barre (vedi 07_alimenti_barcode.sql) ----
+    alimentoTrovaDaBarcode: { fn:'alimento_trova_da_barcode', args:p => ({ p_codice: p.codice, p_barcode: p.barcode }) },
+    alimentoAggiungi:       { fn:'alimento_aggiungi', args:b => ({
+      p_codice: b.codice, p_nome: b.nome, p_marca: b.marca, p_categoria: b.categoria,
+      p_kcal: b.kcal, p_proteine: b.proteine, p_carboidrati: b.carboidrati, p_zuccheri: b.zuccheri,
+      p_grassi: b.grassi, p_grassi_saturi: b.grassiSaturi, p_fibra: b.fibra, p_sale: b.sale,
+      p_porzione: b.porzione, p_descrizione: b.descrizione, p_ingredienti: b.ingredienti,
+      p_immagine: b.immagine, p_barcode: b.barcode,
+    })},
   };
 
   async function apiRpcChiamata_(action, params){
@@ -6002,6 +6108,246 @@
     }
   }
 
+  /* ================= AGGIUNGI ALIMENTO DA CODICE A BARRE =================
+     Scansiona (o inserisci a mano) il codice a barre di un prodotto; se lo trovo nel database
+     pubblico Open Food Facts, precompilo nome/marca/ingredienti/valori nutrizionali — il
+     nutrizionista controlla ed eventualmente corregge prima di salvare. Il salvataggio passa per
+     alimento_aggiungi() (vedi 07_alimenti_barcode.sql): un alimento alla volta, quindi la coda di
+     sincronizzazione verso Google Sheets (vedi sopra) lo prende in carico da sola, esattamente come
+     un alimento aggiunto in qualunque altro modo. */
+  let ABC_SCANNER = null;          // istanza Html5Qrcode attiva, o null se la fotocamera non è aperta
+  let ABC_TROVATO_BARCODE = null;  // barcode dell'alimento già presente, mentre si è nella vista 2
+
+  function apriAggiungiAlimento(){
+    document.getElementById('abc-overlay').style.display = 'flex';
+    abcTornaCerca_();
+  }
+  function chiudiAggiungiAlimento(){
+    abcFermaScanner_();
+    document.getElementById('abc-overlay').style.display = 'none';
+  }
+  // Torna (o va per la prima volta) alla vista di ricerca, pronta per il prossimo prodotto: usata
+  // sia da "Indietro" sia da "Aggiungi un altro prodotto" dopo un salvataggio riuscito.
+  function abcTornaCerca_(){
+    abcFermaScanner_();
+    ABC_TROVATO_BARCODE = null;
+    document.getElementById('abc-view-cerca').style.display = '';
+    document.getElementById('abc-view-trovato').style.display = 'none';
+    document.getElementById('abc-view-conferma').style.display = 'none';
+    document.getElementById('abc-view-salvato').style.display = 'none';
+    document.getElementById('abc-barcode-input').value = '';
+    const statoEl = document.getElementById('abc-stato');
+    statoEl.style.display = 'none'; statoEl.textContent = '';
+    document.getElementById('abc-barcode-input').focus();
+  }
+
+  function abcSubmitCodice_(event){
+    event.preventDefault();
+    const barcode = document.getElementById('abc-barcode-input').value.trim();
+    if(barcode) abcCercaProdotto_(barcode);
+    return false;
+  }
+
+  // Carica la libreria dello scanner solo la prima volta che serve davvero (non ad ogni apertura
+  // del programma): non tutti gli accessi useranno questa funzione, niente da scaricare in più per
+  // chi non scansiona mai.
+  function abcCaricaLibreriaScanner_(){
+    if(window.Html5Qrcode) return Promise.resolve();
+    if(window._abcScannerCarica) return window._abcScannerCarica;
+    window._abcScannerCarica = new Promise((resolve, reject) => {
+      const s = document.createElement('script');
+      s.src = 'https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js';
+      s.onload = () => resolve();
+      s.onerror = () => { window._abcScannerCarica = null; reject(new Error('Impossibile caricare lo scanner.')); };
+      document.head.appendChild(s);
+    });
+    return window._abcScannerCarica;
+  }
+
+  async function abcAvviaScanner_(){
+    const statoEl = document.getElementById('abc-stato');
+    statoEl.style.display = ''; statoEl.textContent = 'Carico la fotocamera…';
+    try{
+      await abcCaricaLibreriaScanner_();
+    } catch(err){
+      statoEl.textContent = 'Non riesco a caricare lo scanner (serve una connessione a Internet). Puoi comunque inserire il codice a mano qui sopra.';
+      return;
+    }
+    document.getElementById('abc-camera-wrap').style.display = '';
+    document.getElementById('abc-btn-scan').style.display = 'none';
+    statoEl.style.display = 'none';
+    try{
+      ABC_SCANNER = new Html5Qrcode('abc-camera-reader');
+      await ABC_SCANNER.start(
+        { facingMode: 'environment' },
+        {
+          fps: 10,
+          qrbox: { width: 260, height: 130 },
+          formatsToSupport: [
+            Html5QrcodeSupportedFormats.EAN_13,
+            Html5QrcodeSupportedFormats.EAN_8,
+            Html5QrcodeSupportedFormats.UPC_A,
+            Html5QrcodeSupportedFormats.UPC_E,
+          ],
+        },
+        (decodedText) => {
+          document.getElementById('abc-barcode-input').value = decodedText;
+          abcFermaScanner_();
+          abcCercaProdotto_(decodedText);
+        },
+        () => {} // un fotogramma senza codice leggibile: normale, niente da fare
+      );
+    } catch(err){
+      abcFermaScanner_();
+      statoEl.style.display = '';
+      statoEl.textContent = 'Non riesco ad accedere alla fotocamera (permesso negato o non disponibile). Puoi comunque inserire il codice a mano qui sopra.';
+    }
+  }
+
+  function abcFermaScanner_(){
+    document.getElementById('abc-camera-wrap').style.display = 'none';
+    document.getElementById('abc-btn-scan').style.display = '';
+    if(!ABC_SCANNER) return;
+    const s = ABC_SCANNER;
+    ABC_SCANNER = null;
+    s.stop().then(() => s.clear()).catch(() => {}); // se la fotocamera è già ferma non è un errore da mostrare
+  }
+
+  async function abcCercaProdotto_(barcode){
+    const statoEl = document.getElementById('abc-stato');
+    statoEl.style.display = ''; statoEl.textContent = 'Cerco il prodotto…';
+    document.getElementById('abc-view-cerca').style.display = '';
+    document.getElementById('abc-view-trovato').style.display = 'none';
+    document.getElementById('abc-view-conferma').style.display = 'none';
+
+    try{
+      const dup = await apiGet('alimentoTrovaDaBarcode', { codice: SESSION.codice, barcode });
+      if(dup.ok && dup.trovato){
+        ABC_TROVATO_BARCODE = barcode;
+        document.getElementById('abc-trovato-testo').textContent =
+          `Hai già "${dup.alimento.nome}" salvato con questo codice a barre. Lo trovi cercandolo in Crea piano o nel diario.`;
+        document.getElementById('abc-view-cerca').style.display = 'none';
+        document.getElementById('abc-view-trovato').style.display = '';
+        statoEl.style.display = 'none';
+        return;
+      }
+    } catch(err){
+      // se il controllo dei doppioni fallisce per un problema di rete non blocchiamo tutto:
+      // si procede comunque, nel peggiore dei casi si ritrova un doppione da unire più avanti.
+    }
+    await abcCercaSuOpenFoodFacts_(barcode);
+  }
+
+  function abcContinuaComeNuovo_(){
+    const barcode = ABC_TROVATO_BARCODE;
+    document.getElementById('abc-view-trovato').style.display = 'none';
+    abcCercaSuOpenFoodFacts_(barcode);
+  }
+
+  // Legge i valori nutrizionali (sempre per 100 g) dalla risposta di Open Food Facts, provando
+  // qualche nome di campo alternativo quando il principale manca.
+  function abcNutriente_(nutrimenti, ...chiavi){
+    for(const k of chiavi){
+      const v = nutrimenti[k];
+      if(typeof v === 'number' && !isNaN(v)) return v;
+    }
+    return '';
+  }
+
+  async function abcCercaSuOpenFoodFacts_(barcode){
+    const statoEl = document.getElementById('abc-stato');
+    statoEl.style.display = ''; statoEl.textContent = 'Cerco il prodotto nel database pubblico…';
+
+    let prodotto = null, fonteTesto = '';
+    try{
+      const url = 'https://world.openfoodfacts.org/api/v2/product/' + encodeURIComponent(barcode) +
+        '.json?fields=product_name,brands,categories,ingredients_text,ingredients_text_it,nutriments,image_front_url,image_front_small_url';
+      const res = await fetch(url);
+      const data = await res.json();
+      if(data && data.status === 1 && data.product){
+        prodotto = data.product;
+        fonteTesto = 'Trovato su Open Food Facts (database pubblico) — controlla i valori prima di salvare, specialmente se il prodotto ha varianti diverse.';
+      } else {
+        fonteTesto = 'Prodotto non trovato nel database pubblico: inserisci i dati a mano qui sotto.';
+      }
+    } catch(err){
+      fonteTesto = 'Non riesco a raggiungere il database pubblico in questo momento: inserisci i dati a mano qui sotto (il codice a barre resta comunque salvato).';
+    }
+
+    document.getElementById('abc-view-cerca').style.display = 'none';
+    document.getElementById('abc-view-conferma').style.display = '';
+    statoEl.style.display = 'none';
+    document.getElementById('abc-conferma-fonte').textContent = fonteTesto;
+
+    const n = (prodotto && prodotto.nutriments) || {};
+    document.getElementById('abc-f-nome').value = (prodotto && prodotto.product_name) || '';
+    document.getElementById('abc-f-marca').value = (prodotto && prodotto.brands) || '';
+    document.getElementById('abc-f-categoria').value = '';
+    document.getElementById('abc-f-kcal').value = abcNutriente_(n, 'energy-kcal_100g', 'energy-kcal');
+    document.getElementById('abc-f-proteine').value = abcNutriente_(n, 'proteins_100g');
+    document.getElementById('abc-f-carboidrati').value = abcNutriente_(n, 'carbohydrates_100g');
+    document.getElementById('abc-f-zuccheri').value = abcNutriente_(n, 'sugars_100g');
+    document.getElementById('abc-f-grassi').value = abcNutriente_(n, 'fat_100g');
+    document.getElementById('abc-f-grassisaturi').value = abcNutriente_(n, 'saturated-fat_100g');
+    document.getElementById('abc-f-fibra').value = abcNutriente_(n, 'fiber_100g');
+    document.getElementById('abc-f-sale').value = abcNutriente_(n, 'salt_100g');
+    document.getElementById('abc-f-porzione').value = 100;
+    document.getElementById('abc-f-ingredienti').value = (prodotto && (prodotto.ingredients_text_it || prodotto.ingredients_text)) || '';
+    document.getElementById('abc-f-descrizione').value = '';
+    document.getElementById('abc-conferma-errore').textContent = '';
+
+    const immagine = prodotto ? (prodotto.image_front_small_url || prodotto.image_front_url || '') : '';
+    const thumbEl = document.getElementById('abc-thumb');
+    if(immagine){ thumbEl.style.display = ''; thumbEl.innerHTML = cpThumbAlimentoHtml({ immagine }); }
+    else { thumbEl.style.display = 'none'; thumbEl.innerHTML = ''; }
+    thumbEl.dataset.immagine = immagine;
+    thumbEl.dataset.barcode = barcode;
+
+    document.getElementById('abc-f-nome').focus();
+  }
+
+  async function abcSalva_(){
+    const errEl = document.getElementById('abc-conferma-errore');
+    errEl.textContent = '';
+    const nome = document.getElementById('abc-f-nome').value.trim();
+    if(!nome){ errEl.textContent = 'Il nome è obbligatorio.'; return; }
+
+    const btn = document.getElementById('abc-btn-salva');
+    cpBottoneCaricando_(btn, 'Salvo…');
+    const thumbEl = document.getElementById('abc-thumb');
+    const num_ = id => { const v = parseFloat(document.getElementById(id).value); return isNaN(v) ? 0 : v; };
+    try{
+      const res = await apiPost('alimentoAggiungi', {
+        codice: SESSION.codice,
+        nome,
+        marca: document.getElementById('abc-f-marca').value.trim(),
+        categoria: document.getElementById('abc-f-categoria').value.trim(),
+        kcal: num_('abc-f-kcal'), proteine: num_('abc-f-proteine'), carboidrati: num_('abc-f-carboidrati'),
+        zuccheri: num_('abc-f-zuccheri'), grassi: num_('abc-f-grassi'), grassiSaturi: num_('abc-f-grassisaturi'),
+        fibra: num_('abc-f-fibra'), sale: num_('abc-f-sale'),
+        porzione: num_('abc-f-porzione') || 100,
+        descrizione: document.getElementById('abc-f-descrizione').value.trim(),
+        ingredienti: document.getElementById('abc-f-ingredienti').value.trim(),
+        immagine: thumbEl.dataset.immagine || '',
+        barcode: thumbEl.dataset.barcode || '',
+      });
+      if(!res.ok){ errEl.textContent = res.error || 'Errore durante il salvataggio.'; cpBottoneFinito_(btn); return; }
+
+      // Ricarico subito il database alimenti così il nuovo prodotto è utilizzabile all'istante in
+      // "Crea piano" e nel diario, con lo stesso nome (nome + marca) che mostra il resto del programma.
+      CP_FOODS = null; CP_FOODS_LOADING = null;
+      await cpLoadFoods();
+
+      document.getElementById('abc-view-conferma').style.display = 'none';
+      document.getElementById('abc-view-salvato').style.display = '';
+      document.getElementById('abc-salvato-testo').textContent =
+        `"${nome}" salvato. Sarà copiato automaticamente su Google Sheets a breve, e puoi già cercarlo in Crea piano o nel diario.`;
+    } catch(err){
+      errEl.textContent = 'Errore di connessione: ' + err.message;
+    }
+    cpBottoneFinito_(btn);
+  }
+
   /* ================= IL MIO DIARIO (personale, solo nutrizionista) =================
      Diario alimentare del nutrizionista stesso, sul modello di MyFitnessPal: alimenti presi dallo
      stesso database di "Crea piano", raggruppati per pasto, un giorno alla volta. Salvato su Supabase
@@ -6524,6 +6870,7 @@
       document.getElementById('view-paziente').style.display = 'none';
       document.getElementById('btn-ricettario-nutri').style.display = 'flex';
       document.getElementById('btn-diario-nutri').style.display = 'flex';
+      document.getElementById('btn-alimento-nutri').style.display = 'flex';
       document.getElementById('topbar-brand-name').textContent = 'GM Program - Gestionale pazienti';
       document.getElementById('topbar-brand-tag').textContent = 'Piano alimentare & monitoraggio pazienti';
       document.getElementById('topbar-brand-tag').style.display = '';
@@ -6560,6 +6907,7 @@
     document.getElementById('btn-logout').style.display = 'none';
     document.getElementById('btn-ricettario-nutri').style.display = 'none';
     document.getElementById('btn-diario-nutri').style.display = 'none';
+    document.getElementById('btn-alimento-nutri').style.display = 'none';
     document.getElementById('topbar-brand-name').textContent = 'GM - Nutrizione e Benessere';
     document.getElementById('topbar-brand-tag').style.display = 'none';
     document.getElementById('login-code').value = '';
