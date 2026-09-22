@@ -335,6 +335,17 @@
   .modal-card h3{ font-size:18px; margin-bottom:4px; }
   .modal-card > p{ font-size:13px; color:var(--ink-faint); margin-bottom:18px; }
 
+  /* "Il mio diario" è una sezione a sé stante, non una finestrella al centro dello
+     schermo: quando è aperta occupa tutto lo schermo, come le altre sezioni del
+     programma, invece di restare una finestra piccola con i bordi vuoti attorno. */
+  #diario-overlay.modal-overlay{ padding:0; align-items:stretch; justify-content:stretch; }
+  #diario-overlay .modal-card{
+    max-width:none; width:100%; height:100%; max-height:none; border-radius:0; border:none; box-shadow:none;
+  }
+  .diario-header-sticky{
+    position:sticky; top:0; background:var(--surface); z-index:2; padding-bottom:10px;
+  }
+
   /* ---------- Upload zone ---------- */
   .dropzone{
     border:1.5px dashed var(--border); border-radius:var(--radius-m); padding:30px 20px;
@@ -1070,7 +1081,7 @@
   @media (max-width: 600px){
     /* Meno spazio sprecato nei bordi di card e modali */
     #tab-creapiano .card{ padding:14px 12px; }
-    #cp-modal-overlay.modal-overlay, #diario-overlay.modal-overlay{ padding:10px; }
+    #cp-modal-overlay.modal-overlay{ padding:10px; }
     #cp-modal-overlay .modal-card, #diario-overlay .modal-card{ padding:16px 14px; max-width:none; }
 
     /* La causa vera per cui la pagina restava più larga dello schermo (bisognava scorrere a
@@ -1474,12 +1485,15 @@
 
     <!-- Il mio diario — diario alimentare personale del nutrizionista, non collegato ai pazienti -->
     <div class="modal-overlay" id="diario-overlay" style="display:none;" onclick="if(event.target===this) chiudiDiario();">
-      <div class="modal-card" style="max-width:640px;">
+      <div class="modal-card">
         <!-- Vista giorno -->
         <div id="diario-list-view">
-          <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
+          <div class="diario-header-sticky" style="display:flex; align-items:center; justify-content:space-between; gap:10px; margin-bottom:4px;">
             <h3 style="margin:0;">Il mio diario</h3>
-            <button class="btn small ghost" type="button" onclick="diarioApriEditorObiettivo_()">Obiettivo</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button class="btn small ghost" type="button" onclick="diarioApriEditorObiettivo_()">Obiettivo</button>
+              <button class="btn small ghost" type="button" onclick="chiudiDiario()" title="Chiudi" aria-label="Chiudi" style="padding:6px 9px;">✕</button>
+            </div>
           </div>
           <p style="margin:0 0 14px;">Il tuo diario alimentare personale, giorno per giorno — non è collegato ai pazienti né al foglio Google.</p>
 
@@ -6265,10 +6279,12 @@
         if(matches.length === 0){
           box.innerHTML = `<div class="cp-suggestion-empty">Nessun alimento trovato per "${cpEsc(inp.value.trim())}"</div>`;
         } else {
+          // Nel diario, a differenza di "Crea piano", non mostriamo "porzione rif. / kcal":
+          // sullo schermo del telefono lo spazio è poco, e quel testo secondario tagliava il
+          // nome dell'alimento, che invece serve leggere per bene per scegliere quello giusto.
           box.innerHTML = matches.map(f => `
-            <div class="cp-suggestion-item" data-id="${cpEsc(f.id)}">
+            <div class="cp-suggestion-item diario-suggestion-item" data-id="${cpEsc(f.id)}">
               <span class="cp-suggestion-name"><b>${cpEsc(f.nome.slice(0, term.length))}</b>${cpEsc(f.nome.slice(term.length))}</span>
-              <span class="cp-suggestion-kcal">porzione rif. ${cpFmt(f.porzione)} g · ${cpFmt(f.kcal*f.porzione/100)} kcal</span>
             </div>`).join('');
           box.querySelectorAll('.cp-suggestion-item').forEach(row => {
             row.addEventListener('mousedown', (e) => {
