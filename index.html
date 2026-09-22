@@ -6136,6 +6136,112 @@
     }).join('');
   }
 
+  // Riga di un alimento nel diario: estratta in una funzione a sé (usata sia per il
+  // rendering completo, sia per aggiungere UNA riga sola senza ricostruire tutto il resto —
+  // vedi la nota sopra "diarioRenderPasti_" sul perché questo evita lo scatto della schermata.
+  function diarioRigaHtml_(v){
+    const f = CP_FOODS_BY_ID[v.alimentoId];
+    const c = diarioComputeVoce_(v);
+    return `
+      <div class="cp-meal-item">
+        <div class="cp-meal-item-name">${cpEsc(f ? f.nome : 'Alimento non più nel database')}</div>
+        <div class="cp-grams-field-wrap" style="display:flex; align-items:center; gap:3px;">
+          <input type="number" class="cp-grams-field diario-grams-field" min="0" step="5" value="${v.grammi}" data-riga="${cpEsc(v.id)}">
+          <span style="font-size:11px; color:var(--ink-faint);">g</span>
+        </div>
+        <div class="cp-meal-item-kcal">${cpFmt(c.kcal)}</div>
+        <div class="cp-item-macros">
+          <span title="Proteine"><b>${cpFmt(c.prot)}</b>P</span>
+          <span title="Grassi"><b>${cpFmt(c.grassi)}</b>F</span>
+          <span title="Carboidrati"><b>${cpFmt(c.carb)}</b>C</span>
+        </div>
+        <button type="button" class="cp-btn-remove diario-btn-remove" data-riga="${cpEsc(v.id)}" title="Rimuovi">${CP_ICON_X}</button>
+      </div>`;
+  }
+
+  // Aggiorna solo i numeri del pasto (proteine/grassi/carboidrati ecc. sotto le sue righe),
+  // senza toccare il resto della schermata.
+  function diarioAggiornaStatsCard_(card){
+    const totals = diarioComputeMeal_(card.dataset.pasto);
+    CP_NUTRIENTI.forEach(n => {
+      const el = card.querySelector(`.cp-ms-val[data-key="${n.key}"]`);
+      if(el) el.textContent = cpFmt(totals[n.key]);
+    });
+  }
+
+  // Collega gli eventi (cambio grammi, rimozione) a UNA riga già presente nella pagina —
+  // usata sia dopo il rendering completo sia dopo l'inserimento al volo di una riga sola.
+  function diarioAttachRigaListeners_(itemEl){
+    // grammi: la UI si aggiorna ad ogni tasto, il salvataggio sul server avviene solo al blur/invio
+    // (evita una chiamata di rete ad ogni singola cifra digitata).
+    const gramsInp = itemEl.querySelector('.diario-grams-field');
+    gramsInp.addEventListener('input', () => {
+      const rigaId = gramsInp.dataset.riga;
+      const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
+      if(!voce) return;
+      voce.grammi = Math.max(0, +gramsInp.value || 0);
+      const c = diarioComputeVoce_(voce);
+      itemEl.querySelector('.cp-meal-item-kcal').textContent = cpFmt(c.kcal);
+      const macroSpans = itemEl.querySelectorAll('.cp-item-macros b');
+      macroSpans[0].textContent = cpFmt(c.prot);
+      macroSpans[1].textContent = cpFmt(c.grassi);
+      macroSpans[2].textContent = cpFmt(c.carb);
+      diarioAggiornaStatsCard_(itemEl.closest('.cp-meal-card'));
+      diarioRenderRiepilogo_();
+    });
+    gramsInp.addEventListener('change', async () => {
+      const rigaId = gramsInp.dataset.riga;
+      const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
+      if(!voce) return;
+      try{
+        const res = await apiPost('diarioModificaGrammi', { codice: SESSION.codice, rigaId, grammi: voce.grammi });
+        if(!res.ok){ showToast(res.error || 'Errore nel salvataggio della quantità.'); }
+        DIARIO_GIORNI_CACHE = null; // il totale kcal del giorno nello storico non è più aggiornato
+      } catch(err){ showToast('Errore di connessione: ' + err.message); }
+    });
+
+    const btn = itemEl.querySelector('.diario-btn-remove');
+    btn.addEventListener('click', async () => {
+      const rigaId = btn.dataset.riga;
+      btn.disabled = true;
+      try{
+        const res = await apiPost('diarioElimina', { codice: SESSION.codice, rigaId });
+        if(res.ok){
+          DIARIO_VOCI = DIARIO_VOCI.filter(x => String(x.id) !== String(rigaId));
+          DIARIO_GIORNI_CACHE = null;
+          const card = itemEl.closest('.cp-meal-card');
+          const itemsEl = card.querySelector('.cp-meal-items');
+          itemEl.remove();
+          if(!itemsEl.querySelector('.cp-meal-item')){
+            itemsEl.innerHTML = `<div class="cp-meal-empty">Nessun alimento — cerca un alimento qui sotto per aggiungerlo.</div>`;
+          }
+          diarioAggiornaStatsCard_(card);
+          diarioRenderRiepilogo_();
+          if(document.getElementById('diario-storia').style.display !== 'none') diarioRenderStoria_();
+        } else {
+          showToast(res.error || "Errore durante l'eliminazione.");
+          btn.disabled = false;
+        }
+      } catch(err){
+        showToast('Errore di connessione: ' + err.message);
+        btn.disabled = false;
+      }
+    });
+  }
+
+  // Aggiunge una riga sola al pasto giusto, senza ricostruire né i pasti né la ricerca:
+  // questo è ciò che evita lo scatto della schermata quando selezioni un alimento (prima,
+  // ricostruire tutto smontava anche il campo di ricerca appena usato, facendo chiudere la
+  // tastiera di scatto e saltare la pagina).
+  function diarioAggiungiRigaInline_(card, voce){
+    const itemsEl = card.querySelector('.cp-meal-items');
+    const empty = itemsEl.querySelector('.cp-meal-empty');
+    if(empty) empty.remove();
+    itemsEl.insertAdjacentHTML('beforeend', diarioRigaHtml_(voce));
+    diarioAttachRigaListeners_(itemsEl.lastElementChild);
+    diarioAggiornaStatsCard_(card);
+  }
+
   function diarioRenderPasti_(){
     const el = document.getElementById('diario-pasti');
     const searchDisabled = !CP_FOODS || CP_FOODS.length === 0;
@@ -6144,25 +6250,7 @@
       const totals = diarioComputeMeal_(m);
       const rows = voci.length === 0
         ? `<div class="cp-meal-empty">Nessun alimento — cerca un alimento qui sotto per aggiungerlo.</div>`
-        : voci.map(v => {
-            const f = CP_FOODS_BY_ID[v.alimentoId];
-            const c = diarioComputeVoce_(v);
-            return `
-              <div class="cp-meal-item">
-                <div class="cp-meal-item-name">${cpEsc(f ? f.nome : 'Alimento non più nel database')}</div>
-                <div class="cp-grams-field-wrap" style="display:flex; align-items:center; gap:3px;">
-                  <input type="number" class="cp-grams-field diario-grams-field" min="0" step="5" value="${v.grammi}" data-riga="${cpEsc(v.id)}">
-                  <span style="font-size:11px; color:var(--ink-faint);">g</span>
-                </div>
-                <div class="cp-meal-item-kcal">${cpFmt(c.kcal)}</div>
-                <div class="cp-item-macros">
-                  <span title="Proteine"><b>${cpFmt(c.prot)}</b>P</span>
-                  <span title="Grassi"><b>${cpFmt(c.grassi)}</b>F</span>
-                  <span title="Carboidrati"><b>${cpFmt(c.carb)}</b>C</span>
-                </div>
-                <button type="button" class="cp-btn-remove diario-btn-remove" data-riga="${cpEsc(v.id)}" title="Rimuovi">${CP_ICON_X}</button>
-              </div>`;
-          }).join('');
+        : voci.map(diarioRigaHtml_).join('');
       return `
         <div class="cp-meal-card" data-pasto="${cpEsc(m)}">
           <div class="cp-meal-head"><div class="cp-meal-name">${m}</div></div>
@@ -6181,65 +6269,11 @@
         </div>`;
     }).join('');
 
-    // grammi: la UI si aggiorna ad ogni tasto, il salvataggio sul server avviene solo al blur/invio
-    // (evita una chiamata di rete ad ogni singola cifra digitata).
-    el.querySelectorAll('.diario-grams-field').forEach(inp => {
-      inp.addEventListener('input', () => {
-        const rigaId = inp.dataset.riga;
-        const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
-        if(!voce) return;
-        voce.grammi = Math.max(0, +inp.value || 0);
-        const c = diarioComputeVoce_(voce);
-        const itemEl = inp.closest('.cp-meal-item');
-        itemEl.querySelector('.cp-meal-item-kcal').textContent = cpFmt(c.kcal);
-        const macroSpans = itemEl.querySelectorAll('.cp-item-macros b');
-        macroSpans[0].textContent = cpFmt(c.prot);
-        macroSpans[1].textContent = cpFmt(c.grassi);
-        macroSpans[2].textContent = cpFmt(c.carb);
-        const card = inp.closest('.cp-meal-card');
-        const mealTotals = diarioComputeMeal_(card.dataset.pasto);
-        CP_NUTRIENTI.forEach(n => {
-          card.querySelector(`.cp-ms-val[data-key="${n.key}"]`).textContent = cpFmt(mealTotals[n.key]);
-        });
-        diarioRenderRiepilogo_();
-      });
-      inp.addEventListener('change', async () => {
-        const rigaId = inp.dataset.riga;
-        const voce = DIARIO_VOCI.find(x => String(x.id) === String(rigaId));
-        if(!voce) return;
-        try{
-          const res = await apiPost('diarioModificaGrammi', { codice: SESSION.codice, rigaId, grammi: voce.grammi });
-          if(!res.ok){ showToast(res.error || 'Errore nel salvataggio della quantità.'); }
-          DIARIO_GIORNI_CACHE = null; // il totale kcal del giorno nello storico non è più aggiornato
-        } catch(err){ showToast('Errore di connessione: ' + err.message); }
-      });
-    });
-
-    el.querySelectorAll('.diario-btn-remove').forEach(btn => {
-      btn.addEventListener('click', async () => {
-        const rigaId = btn.dataset.riga;
-        btn.disabled = true;
-        try{
-          const res = await apiPost('diarioElimina', { codice: SESSION.codice, rigaId });
-          if(res.ok){
-            DIARIO_VOCI = DIARIO_VOCI.filter(x => String(x.id) !== String(rigaId));
-            DIARIO_GIORNI_CACHE = null;
-            diarioRenderPasti_();
-            diarioRenderRiepilogo_();
-            if(document.getElementById('diario-storia').style.display !== 'none') diarioRenderStoria_();
-          } else {
-            showToast(res.error || "Errore durante l'eliminazione.");
-            btn.disabled = false;
-          }
-        } catch(err){
-          showToast('Errore di connessione: ' + err.message);
-          btn.disabled = false;
-        }
-      });
-    });
+    el.querySelectorAll('.cp-meal-item').forEach(diarioAttachRigaListeners_);
 
     el.querySelectorAll('.diario-search-input').forEach(inp => {
       const pasto = inp.dataset.pasto;
+      const card = inp.closest('.cp-meal-card');
       const box = el.querySelector(`.cp-meal-suggestions[data-pasto="${CSS.escape(pasto)}"]`);
       let currentMatches = [];
       let highlighted = -1;
@@ -6250,11 +6284,16 @@
         try{
           const res = await apiPost('diarioAggiungi', { codice: SESSION.codice, data: DIARIO_DATA, pasto, alimentoId: f.id, grammi: f.porzione });
           if(res.ok){
-            DIARIO_VOCI.push({ id: res.id, pasto, alimentoId: f.id, grammi: f.porzione });
+            const voce = { id: res.id, pasto, alimentoId: f.id, grammi: f.porzione };
+            DIARIO_VOCI.push(voce);
             DIARIO_GIORNI_CACHE = null;
-            diarioRenderPasti_();
+            // Solo la riga nuova e i numeri del pasto: niente ricostruzione generale, quindi
+            // il campo di ricerca resta esattamente dov'era (e la tastiera resta aperta,
+            // pronta per cercare subito il prossimo alimento).
+            diarioAggiungiRigaInline_(card, voce);
             diarioRenderRiepilogo_();
             if(document.getElementById('diario-storia').style.display !== 'none') diarioRenderStoria_();
+            inp.focus();
           } else {
             showToast(res.error || "Errore durante l'aggiunta.");
           }
