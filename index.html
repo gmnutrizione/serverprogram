@@ -213,6 +213,16 @@
   .patient-info{ min-width:0; flex:1; }
   .patient-name{ font-size:13.8px; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .patient-meta{ font-size:12px; color:var(--ink-faint); margin-top:1px; }
+  .patient-list-label{
+    font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:.05em; color:var(--ink-faint);
+    padding:2px 10px 4px;
+  }
+  .patient-list-toggle{
+    display:block; width:100%; text-align:left; background:none; border:none; cursor:pointer;
+    font-family:inherit; font-size:12.5px; font-weight:600; color:var(--accent-ink); padding:9px 10px;
+    border-radius:var(--radius-s); margin-top:2px;
+  }
+  .patient-list-toggle:hover{ background:var(--accent-soft); }
   .pill{
     display:inline-flex; align-items:center; gap:5px; font-size:11px; font-weight:600;
     padding:3px 9px 3px 7px; border-radius:999px; white-space:nowrap;
@@ -1050,6 +1060,65 @@
   .diario-storia-row.active{ border-color:var(--accent); background:var(--accent-soft); }
   .diario-storia-data{ font-weight:600; text-transform:capitalize; }
   .diario-storia-info{ font-family:var(--font-mono); font-size:11.5px; color:var(--ink-faint); white-space:nowrap; }
+
+  /* =========================================================== */
+  /* TELEFONO — solo "Crea piano" e "Il mio diario". Tutto il resto */
+  /* del programma nutrizionista (Panoramica, Misurazioni, Confronto, */
+  /* Ricettario) e l'intero programma da PC restano com'erano: queste */
+  /* regole valgono solo sotto i 600px e solo dentro queste due sezioni. */
+  /* =========================================================== */
+  @media (max-width: 600px){
+    /* Meno spazio sprecato nei bordi di card e modali */
+    #tab-creapiano .card{ padding:14px 12px; }
+    #cp-modal-overlay.modal-overlay, #diario-overlay.modal-overlay{ padding:10px; }
+    #cp-modal-overlay .modal-card, #diario-overlay .modal-card{ padding:16px 14px; max-width:none; }
+
+    /* La causa vera per cui la pagina restava più larga dello schermo (bisognava scorrere a
+       destra): una griglia a una colonna, per come funziona di base, non si restringe mai sotto
+       la larghezza del contenuto più largo al suo interno — anche se quel contenuto potrebbe
+       andare a capo. Qui diciamo esplicitamente che può restringersi quanto serve. */
+    #tab-creapiano .two-col.cp-stack > *,
+    #tab-creapiano #cp-meal-list > .cp-meal-card,
+    #diario-overlay #diario-pasti > .cp-meal-card{
+      min-width:0;
+    }
+
+    /* Campi più grandi: sotto i 16px il telefono ingrandisce da solo la pagina quando ci tocchi
+       dentro per scrivere, il che è fastidioso e disorientante — qui restano sempre a 16px. */
+    #tab-creapiano .cp-grams-field, #tab-creapiano .cp-meal-search-input,
+    #cp-modal-overlay input, #cp-modal-overlay select, #cp-modal-overlay textarea,
+    #diario-overlay input, #diario-overlay select, #diario-overlay textarea{
+      font-size:16px;
+    }
+    #tab-creapiano .cp-grams-field, #diario-overlay .cp-grams-field{ width:68px; }
+
+    /* Riga di un alimento in un pasto: il nome va sulla propria riga (prima era schiacciato
+       accanto a grammi/kcal/macro, che hanno una larghezza fissa e non si restringono) */
+    #tab-creapiano .cp-meal-item, #diario-overlay .cp-meal-item{
+      flex-wrap:wrap; row-gap:6px; padding:6px 0; border-bottom:1px dashed var(--border-soft);
+    }
+    #tab-creapiano .cp-meal-item-name, #diario-overlay .cp-meal-item-name{
+      flex:1 1 100%; white-space:normal; font-size:13.5px;
+    }
+    #tab-creapiano .cp-btn-remove, #diario-overlay .cp-btn-remove{ width:28px; height:28px; margin-left:auto; }
+    #tab-creapiano .cp-btn-remove svg, #diario-overlay .cp-btn-remove svg{ width:15px; height:15px; }
+    #tab-creapiano .cp-day-tab{ padding:8px 14px; }
+
+    /* Torta + legenda dell'obiettivo: una sopra l'altra invece che schiacciate fianco a fianco */
+    #tab-creapiano .cp-kcal-hero{ flex-direction:column; align-items:stretch; }
+    #tab-creapiano .cp-donut-wrap{ margin:0 auto; }
+
+    /* Pulsanti azione di "Crea piano" (Obiettivo, Importa modello, Duplica giorno, ecc.): griglia
+       a due colonne comoda da toccare, invece di tante pillole strette a capo alla rinfusa */
+    #cp-body .card-head{ flex-direction:column; align-items:stretch; }
+    #cp-body .card-head > div:last-child{ display:grid !important; grid-template-columns:1fr 1fr; gap:8px; width:100%; }
+    #cp-body .card-head > div:last-child .btn{ width:100%; justify-content:center; }
+
+    /* "Il mio diario": frecce giorno più grandi e facili da toccare, selettore data a tutta larghezza */
+    .diario-day-nav > .btn{ width:38px; height:38px; padding:0; justify-content:center; font-size:17px; flex:none; }
+    .diario-day-nav-center input[type="date"]{ width:100%; box-sizing:border-box; }
+    .diario-oggi-btn{ padding:5px 14px; }
+  }
 </style>
 
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -2306,6 +2375,10 @@
     salvaModello:            { fn:'salva_modello', args:b => ({ p_codice: b.codice, p_nome: b.nome, p_descrizione: b.descrizione, p_target: b.target, p_day: b.day }) },
     salvaRicetta:            { fn:'salva_ricetta', args:b => ({ p_codice: b.codice, p_riga: b.riga || null, p_nome: b.nome, p_categoria: b.categoria, p_foto: b.foto, p_porzioni: b.porzioni, p_ingredienti: b.ingredienti, p_procedimento: b.procedimento, p_commento: b.commento }) },
     eliminaRicetta:          { fn:'elimina_ricetta', args:b => ({ p_codice: b.codice, p_riga: b.riga }) },
+    // Coda di sincronizzazione alimenti -> Google Sheets (vedi 06_specchio_alimenti_coda.sql):
+    // processa un alimento alla volta, così importare tanti alimenti insieme via CSV su Supabase
+    // resta sempre istantaneo, e la copia sul foglio avviene poco dopo in sottofondo.
+    specchioProcessaCoda:    { fn:'specchio_processa_coda', args:p => ({ p_codice: p.codice }) },
     // ---- Il mio diario (personale, solo nutrizionista — vedi 05_diario_personale.sql) ----
     diarioVoci:            { fn:'diario_voci',             args:p => ({ p_codice: p.codice, p_data: p.data }) },
     diarioGiorni:          { fn:'diario_giorni',           args:p => ({ p_codice: p.codice }) },
@@ -2494,21 +2567,32 @@
 
   /* ================= PATIENT LIST ================= */
   let patientSearchTerm = '';
-  function renderPatientList(){
-    const el = document.getElementById('patient-list');
-    if(!PATIENTS.length){
-      el.innerHTML = '<p style="font-size:12.8px; color:var(--ink-faint);">Nessun paziente attivo trovato nel foglio.</p>';
-      return;
-    }
-    const term = patientSearchTerm.trim().toLowerCase();
-    const filtered = term === '' ? PATIENTS : PATIENTS.filter(p =>
-      (p.Nome||'').toLowerCase().includes(term) || codiceStr_(p.Codice).toLowerCase().includes(term)
-    );
-    if(!filtered.length){
-      el.innerHTML = `<p style="font-size:12.8px; color:var(--ink-faint);">Nessun paziente trovato per "${cpEsc(patientSearchTerm.trim())}"</p>`;
-      return;
-    }
-    el.innerHTML = filtered.map(p => `
+  // Con tanti pazienti la lista intera diventa ingombrante: di default (nessuna ricerca in corso)
+  // mostriamo solo gli ultimi 4 aperti/modificati, con un link per vederli tutti se serve. Cercare
+  // qualcosa nella barra di ricerca continua a guardare in TUTTI i pazienti, non solo i recenti.
+  let pazientiMostraTutti = false;
+  const PAZIENTI_RECENTI_MAX = 4;
+  function pazientiRecentiChiave_(){ return 'percorsoPazientiRecenti::' + (SESSION && SESSION.codice); }
+  function pazientiRecentiLeggi_(){
+    try{
+      const raw = localStorage.getItem(pazientiRecentiChiave_());
+      const arr = raw ? JSON.parse(raw) : [];
+      return Array.isArray(arr) ? arr : [];
+    } catch(err){ return []; } // localStorage non disponibile: nessun ricordo dei recenti, si vedrà sempre la lista intera
+  }
+  function pazientiRecentiSegna_(codice){
+    if(!codice) return;
+    try{
+      let arr = pazientiRecentiLeggi_().filter(c => c !== codice);
+      arr.unshift(codice);
+      localStorage.setItem(pazientiRecentiChiave_(), JSON.stringify(arr.slice(0, 8)));
+    } catch(err){ /* localStorage non disponibile: ignora, non è un dato critico */ }
+  }
+  function pazientiVediTutti_(){ pazientiMostraTutti = true; renderPatientList(); }
+  function pazientiVediSoloRecenti_(){ pazientiMostraTutti = false; renderPatientList(); }
+
+  function renderPatientRighe_(list){
+    return list.map(p => `
       <div class="patient ${codiceStr_(p.Codice)===currentPatientCode?'active':''}" data-codice="${cpEsc(codiceStr_(p.Codice))}" onclick="selectPatientByCode('${codiceStr_(p.Codice).replace(/'/g,"\\'")}')">
         <div class="avatar">${(p.Nome||'?').split(' ').map(w=>w[0]).join('').slice(0,2)}</div>
         <div class="patient-info">
@@ -2517,6 +2601,49 @@
         </div>
       </div>
     `).join('');
+  }
+
+  function renderPatientList(){
+    const el = document.getElementById('patient-list');
+    if(!PATIENTS.length){
+      el.innerHTML = '<p style="font-size:12.8px; color:var(--ink-faint);">Nessun paziente attivo trovato nel foglio.</p>';
+      return;
+    }
+    const term = patientSearchTerm.trim().toLowerCase();
+
+    // Con una ricerca in corso, si guarda sempre in tutti i pazienti — i "recenti" sono solo la
+    // vista di default quando la barra di ricerca è vuota.
+    if(term !== ''){
+      const filtered = PATIENTS.filter(p =>
+        (p.Nome||'').toLowerCase().includes(term) || codiceStr_(p.Codice).toLowerCase().includes(term)
+      );
+      if(!filtered.length){
+        el.innerHTML = `<p style="font-size:12.8px; color:var(--ink-faint);">Nessun paziente trovato per "${cpEsc(patientSearchTerm.trim())}"</p>`;
+        return;
+      }
+      el.innerHTML = renderPatientRighe_(filtered);
+      return;
+    }
+
+    const recenti = pazientiRecentiLeggi_()
+      .map(c => PATIENTS.find(p => codiceStr_(p.Codice) === c))
+      .filter(Boolean)
+      .slice(0, PAZIENTI_RECENTI_MAX);
+
+    const soloRecenti = !pazientiMostraTutti && recenti.length > 0;
+    let html = '';
+    if(soloRecenti){
+      html += `<div class="patient-list-label">Recenti</div>` + renderPatientRighe_(recenti);
+      if(PATIENTS.length > recenti.length){
+        html += `<button type="button" class="patient-list-toggle" onclick="pazientiVediTutti_()">Vedi tutti i pazienti (${PATIENTS.length})</button>`;
+      }
+    } else {
+      html += renderPatientRighe_(PATIENTS);
+      if(recenti.length > 0){
+        html += `<button type="button" class="patient-list-toggle" onclick="pazientiVediSoloRecenti_()">Mostra solo i recenti</button>`;
+      }
+    }
+    el.innerHTML = html;
   }
 
   /* ---- ricerca paziente: filtro live + navigazione da tastiera ---- */
@@ -4471,9 +4598,10 @@
 
   async function selectPatientByCode(codice){
     codice = codiceStr_(codice);
+    pazientiRecentiSegna_(codice);
     currentPatientCode = codice;
     currentPatientMeta = PATIENTS.find(p => codiceStr_(p.Codice) === codice) || null;
-    document.querySelectorAll('.patient').forEach(el => el.classList.toggle('active', codiceStr_(el.dataset.codice) === codice));
+    renderPatientList(); // aggiorna subito l'ordine dei "recenti" e l'evidenziazione di chi è aperto ora
     if(currentPatientMeta){
       document.getElementById('patient-name').textContent = currentPatientMeta.Nome || '—';
       document.getElementById('patient-goal').textContent = (currentPatientMeta.Eta ? currentPatientMeta.Eta+' anni · ' : '') + 'Obiettivo: ' + (currentPatientMeta.Obiettivo || '—');
@@ -5838,6 +5966,28 @@
     }
   }
 
+  /* ================= SINCRONIZZAZIONE ALIMENTI IN SOTTOFONDO =================
+     Svuota la coda creata da 06_specchio_alimenti_coda.sql: un alimento alla volta, mai tutti
+     insieme, così anche centinaia di alimenti in attesa (es. dopo un import CSV corposo) non
+     rischiano mai lo stesso timeout che si aveva prima. Viene richiamata da enterApp() senza
+     essere aspettata (l'ingresso nel programma non deve mai dipendere da questo), e mostra un
+     avviso solo se ha davvero sincronizzato qualcosa — altrimenti resta silenziosa. */
+  async function specchioSincronizzaAlimentiSfondo_(){
+    if(!apiConfigured()) return;
+    let totale = 0;
+    for(let tentativo = 0; tentativo < 300; tentativo++){
+      let res;
+      try{ res = await apiPost('specchioProcessaCoda', { codice: SESSION.codice }); }
+      catch(err){ break; } // errore di rete: si riprova al prossimo accesso, non blocca il programma
+      if(!res || !res.ok) break;
+      if(res.fatto) break;
+      totale++;
+    }
+    if(totale > 0){
+      showToast(totale + (totale === 1 ? ' alimento sincronizzato' : ' alimenti sincronizzati') + ' con Google Sheets');
+    }
+  }
+
   /* ================= IL MIO DIARIO (personale, solo nutrizionista) =================
      Diario alimentare del nutrizionista stesso, sul modello di MyFitnessPal: alimenti presi dallo
      stesso database di "Crea piano", raggruppati per pasto, un giorno alla volta. Salvato su Supabase
@@ -6323,6 +6473,7 @@
       document.getElementById('topbar-brand-tag').textContent = 'Piano alimentare & monitoraggio pazienti';
       document.getElementById('topbar-brand-tag').style.display = '';
       cpLoadFoods(); // in background: pronto per quando si apre il tab "Crea piano"
+      specchioSincronizzaAlimentiSfondo_(); // in background: svuota la coda di alimenti in attesa di essere copiati su Google Sheets
       if(preloadedPazienti){
         PATIENTS = preloadedPazienti;
         renderPatientList();
@@ -6342,6 +6493,7 @@
   function logout(){
     SESSION = null; currentPatientCode = null; currentPatientMeta = null;
     currentRows = []; METRICS = {}; currentPlan = null; currentPlanHistory = [];
+    pazientiMostraTutti = false; patientSearchTerm = '';
     // Così un accesso successivo (magari di un altro paziente, nello stesso browser) ricarica
     // davvero i dati invece di riusare quelli — ormai non più validi — del paziente precedente.
     CP_PIANO_PAZIENTE_PRONTO = false; CP_PIANO_PAZIENTE_CARICAMENTO = null;
