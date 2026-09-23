@@ -889,7 +889,12 @@
      schermata intera lato paziente (non più stampa, solo scorrimento continuo) creerebbe invece
      grossi spazi vuoti dopo le sezioni più corte (es. Colazione/Spuntini) — qui va quindi tolta. */
   .pg-doc .pg-pagina{ display:flex; flex-direction:column; }
-  @media print{ .pg-doc .pg-pagina{ min-height:900px; } }
+  /* Altezza pari all'area stampabile reale (A4 297mm meno i margini di @page sopra/sotto, 20mm+14mm),
+     cosi il piè di pagina (margin-top:auto) tocca esattamente il fondo pagina, appena sopra al
+     numero di pagina disegnato nel margine, invece di fermarsi più in alto per via di una stima in
+     px imprecisa. Il margine sotto è stato ridotto a 14mm (bastano per una riga di numero pagina)
+     cosi le due righe restano vicine invece che separate da un grande spazio vuoto. */
+  @media print{ .pg-doc .pg-pagina{ min-height:263mm; } }
   .pg-doc .pg-pagina-footer{
     margin-top:auto; padding-top:8px; border-top:1px solid var(--pg-border-soft);
     display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:12.5px; color:var(--pg-ink-soft);
@@ -912,13 +917,19 @@
     background:var(--pg-surface-raised); border:1px solid var(--pg-border-soft); border-radius:14px;
     box-shadow:0 1px 2px rgba(23,34,29,.06), 0 1px 1px rgba(23,34,29,.04); padding:8px 14px; margin-bottom:3px;
   }
-  /* Senza questo, in stampa un riquadro (Pranzo, Cena, Formaggi, ecc.) che non entra tutto nella
-     pagina viene tagliato a metà dal bordo del foglio — il bordo arrotondato/l'ombra si interrompono
-     di netto, con l'effetto "ritaglio strano" visto nel PDF. Con "non spezzare" il riquadro salta per
-     intero all'inizio della pagina successiva invece di essere tagliato. */
+  /* Ogni riga (opzione/riga di glossario/riga di tabella) non deve mai essere spezzata a metà da
+     un cambio pagina: cosi il riquadro si interrompe in modo pulito fra una riga e la successiva.
+     Nota: "non spezzare" NON va messo anche sul riquadro (.pg-card) che le contiene — Chrome ha un
+     bug di stampa per cui un box con bordo arrotondato/ombra che è "non spezzabile" E contiene a sua
+     volta figli "non spezzabili" viene ridisegnato due volte leggermente sfalsato, con l'effetto
+     "bordo fantasma"/più scuro da un lato visto nei PDF. Il bordo del riquadro resta pulito comunque,
+     perché le righe al suo interno non si spezzano mai. */
   @media print{
-    .pg-doc .pg-card, .pg-doc .pg-opzione, .pg-doc .pg-glossario-riga{ break-inside:avoid; page-break-inside:avoid; }
+    .pg-doc .pg-opzione, .pg-doc .pg-glossario-riga{ break-inside:avoid; page-break-inside:avoid; }
     .pg-doc .pg-equiv-table tr{ break-inside:avoid; page-break-inside:avoid; }
+    /* L'ombra del riquadro è un'altra fonte dello stesso artefatto di stampa: in stampa non serve
+       (dà solo profondità a schermo), quindi la togliamo e teniamo solo il bordo sottile. */
+    .pg-doc .pg-card{ box-shadow:none; }
   }
 
   .pg-doc .pg-glossario-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:22px; }
@@ -939,6 +950,11 @@
   .pg-doc .pg-opzione-alimenti{ font-size:10.8px; color:var(--pg-ink-soft); line-height:1.35; }
   .pg-doc .pg-opzione-alimenti .pg-g{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; }
   .pg-doc .pg-opzione-alimenti .pg-fisso{ color:var(--pg-ink-faint); }
+  /* Riga unica per Pranzo/Cena (vedi pgHtmlOpzioneFissaStampa_): stessa dimensione del testo delle
+     alimenti su due righe, ma nomi in grassetto direttamente nel flusso invece che su un titolo a parte. */
+  .pg-doc .pg-opzione-riga{ font-size:11.5px; line-height:1.4; color:var(--pg-ink-soft); }
+  .pg-doc .pg-opzione-riga b{ color:var(--pg-ink); font-weight:600; }
+  .pg-doc .pg-opzione-riga .pg-g{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; }
 
   .pg-doc .pg-equiv-table{ width:100%; border-collapse:collapse; font-size:10.8px; }
   .pg-doc .pg-equiv-table th{
@@ -967,12 +983,16 @@
        viewport="width=device-width" della pagina: il risultato è testo che va a capo dentro alle
        righe come se lo schermo fosse strettissimo, con il documento che si allunga su molte più
        pagine del dovuto. Fissare qui una larghezza esplicita, non legata al viewport, costringe il
-       motore di stampa a impaginare come su desktop e poi scalare il risultato sul foglio. */
-    .pg-doc{ max-width:none; width:760px; padding:0; }
+       motore di stampa a impaginare come su desktop invece che sulla larghezza schermo.
+       La larghezza è impostata esattamente pari all'area stampabile del foglio (210mm - 12mm - 12mm
+       di margini di @page, sotto): se non combacia esattamente Chrome scala l'intero contenuto per
+       farlo entrare, e quella stessa scala si applica anche alle altezze in mm usate altrove (es.
+       min-height di .pg-pagina), sfasando il piè di pagina rispetto al fondo del foglio. */
+    .pg-doc{ max-width:none; width:186mm; padding:0; }
     /* Il checkbox "Intestazioni e piè di pagina" del browser va tolto in stampa (rimuove data/ora,
        titolo pagina e link in automatico) — qui aggiungiamo SOLO il numero di pagina, disegnato da
        noi con i colori e il font del documento invece di quello generico del browser. */
-    @page{ size:A4; margin:20mm 12mm 26mm 12mm; @bottom-right{ content: counter(page) " / " counter(pages); font-family:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif; font-size:9.5pt; color:#7C8A76; } }
+    @page{ size:A4; margin:20mm 12mm 14mm 12mm; @bottom-center{ content: counter(page) " / " counter(pages); font-family:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif; font-size:9.5pt; color:#7C8A76; vertical-align:middle; } }
   }
 
   .p-checkin-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-soft); }
@@ -7192,18 +7212,18 @@
       </div>
     </div>`;
   }
+  // Pranzo e Cena restano su una riga sola (a differenza di Colazione/Spuntini) per stare
+  // entrambi in un'unica pagina: nome dell'alimento in grassetto seguito dalla quantità, tutto
+  // sulla stessa riga invece di titolo+dettaglio su due righe separate.
   function pgHtmlOpzioneFissaStampa_(o, num, verdure, olio){
-    const baseTxt = `${cpEsc(o.base.label)} <span class="pg-g">${cpFmt(o.base.valore)} g</span>`;
+    const baseTxt = `<b>${cpEsc(o.base.label)}</b> <span class="pg-g">${cpFmt(o.base.valore)} g</span>`;
     const proteicaTxt = o.proteica.testo
-      ? cpEsc(o.proteica.testo)
-      : `${cpEsc(o.proteica.label)} <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span>`;
-    const elenco = `${baseTxt} · ${proteicaTxt} · Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span>`;
+      ? `<b>${cpEsc(o.proteica.testo)}</b>`
+      : `<b>${cpEsc(o.proteica.label)}</b> <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span>`;
+    const riga = `${baseTxt} · ${proteicaTxt} · Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span>`;
     return `<div class="pg-opzione">
       <div class="pg-opzione-num">${num}</div>
-      <div class="pg-opzione-corpo">
-        <div class="pg-opzione-titolo">${cpEsc(o.base.label)} + ${cpEsc(o.proteica.label)}</div>
-        <div class="pg-opzione-alimenti">${elenco}</div>
-      </div>
+      <div class="pg-opzione-corpo"><div class="pg-opzione-riga">${riga}</div></div>
     </div>`;
   }
   function pgHtmlStampaCompleta_(piano, imp, meta){
