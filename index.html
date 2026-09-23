@@ -872,7 +872,7 @@
   .pg-doc .pg-cover-title{ font-family:var(--pg-font-display); font-size:30px; font-weight:600; line-height:1.35; color:var(--pg-ink); }
   .pg-doc .pg-cover-bottom{ text-align:center; font-family:var(--pg-font-display); font-style:italic; font-size:23px; color:var(--pg-ink-soft); }
 
-  .pg-doc .pg-pagina{ min-height:930px; display:flex; flex-direction:column; }
+  .pg-doc .pg-pagina{ min-height:900px; display:flex; flex-direction:column; }
   .pg-doc .pg-pagina-footer{
     margin-top:auto; padding-top:8px; border-top:1px solid var(--pg-border-soft);
     display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:12.5px; color:var(--pg-ink-soft);
@@ -882,9 +882,10 @@
   .pg-doc .pg-break-before{ break-before:page; page-break-before:always; }
 
   .pg-doc .pg-section-title{
-    font-family:var(--pg-font-display); font-size:19px; font-weight:600; margin:16px 0 7px;
+    font-family:var(--pg-font-display); font-size:19px; font-weight:600; margin:14px 0 6px;
     display:flex; align-items:center; gap:8px; color:var(--pg-ink);
   }
+  .pg-doc .pg-pagina > .pg-section-title:first-child{ margin-top:0; }
   .pg-doc .pg-section-title .pg-tag{
     font-family:var(--pg-font-body); font-size:10px; font-weight:600; text-transform:uppercase;
     letter-spacing:.05em; color:var(--pg-ink-faint); background:var(--pg-border-soft); padding:1px 7px; border-radius:999px;
@@ -913,10 +914,6 @@
   .pg-doc .pg-opzione-alimenti{ font-size:10.8px; color:var(--pg-ink-soft); line-height:1.35; }
   .pg-doc .pg-opzione-alimenti .pg-g{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; }
   .pg-doc .pg-opzione-alimenti .pg-fisso{ color:var(--pg-ink-faint); }
-  .pg-doc .pg-fonte-pill{ font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:1px 7px; border-radius:999px; }
-  .pg-doc .pg-fonte-pill.pg-piano{ background:var(--pg-good-soft); color:var(--pg-good); }
-  .pg-doc .pg-fonte-pill.pg-preset{ background:var(--pg-warning-soft); color:#8a6a1c; }
-  .pg-doc .pg-fonte-pill.pg-fisso{ background:var(--pg-border-soft); color:var(--pg-ink-faint); }
 
   .pg-doc .pg-equiv-table{ width:100%; border-collapse:collapse; font-size:10.8px; }
   .pg-doc .pg-equiv-table th{
@@ -939,15 +936,12 @@
   .pg-doc .pg-freq-table th:not(:first-child), .pg-doc .pg-freq-table td:not(:first-child){ text-align:center; }
   .pg-doc .pg-freq-table td.pg-g{ text-align:center; }
 
-  .pg-doc .pg-legenda{ display:flex; gap:16px; flex-wrap:wrap; font-size:10.5px; color:var(--pg-ink-faint); margin-top:14px; padding-top:8px; border-top:1px solid var(--pg-border-soft); }
-  .pg-doc .pg-legenda span{ display:inline-flex; align-items:center; gap:6px; }
-  .pg-doc .pg-dot{ width:8px; height:8px; border-radius:999px; flex:none; }
-  .pg-doc .pg-dot.pg-piano{ background:var(--pg-good); }
-  .pg-doc .pg-dot.pg-preset{ background:var(--pg-warning); }
-
   @media print{
     .pg-doc{ max-width:none; padding:0; }
-    @page{ size:A4; margin:20mm 12mm 26mm 12mm; }
+    /* Il checkbox "Intestazioni e piè di pagina" del browser va tolto in stampa (rimuove data/ora,
+       titolo pagina e link in automatico) — qui aggiungiamo SOLO il numero di pagina, disegnato da
+       noi con i colori e il font del documento invece di quello generico del browser. */
+    @page{ size:A4; margin:20mm 12mm 26mm 12mm; @bottom-right{ content: counter(page) " / " counter(pages); font-family:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif; font-size:9.5pt; color:#7C8A76; } }
   }
 
   .p-checkin-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-soft); }
@@ -7132,11 +7126,6 @@
     ];
     return righe.map(([nome,g]) => `<tr><td>${cpEsc(nome)}</td><td class="pg-g">${cpEsc(g)}</td></tr>`).join('');
   }
-  function pgFontePillHtml_(fonte){
-    if(fonte === 'piano') return '<span class="pg-fonte-pill pg-piano">Dal piano</span>';
-    if(fonte === 'fisso') return '<span class="pg-fonte-pill pg-fisso">Fisso</span>';
-    return '<span class="pg-fonte-pill pg-preset">Preimpostato</span>';
-  }
   function pgHtmlOpzioneDerivataStampa_(o, num){
     const elenco = o.righe.map(r => `${cpEsc(cpNomeSenzaMarca(r.nome))} <span class="pg-g">${cpFmt(r.g)} g</span>`).join(' · ');
     return `<div class="pg-opzione">
@@ -7144,17 +7133,20 @@
       <div class="pg-opzione-corpo"><div class="pg-opzione-titolo">${elenco}</div></div>
     </div>`;
   }
+  // Riga di Pranzo/Cena su UNA sola riga (niente più titolo in grassetto + riga dettagli separata,
+  // e niente più etichette "Dal piano"/"Preimpostato": al paziente non serve sapere da dove viene
+  // ciascun valore, solo quanto mangiarne — la stessa info resta comunque visibile e modificabile
+  // per la nutrizionista nella scheda Studio). Stesso stile, identico a pgHtmlOpzioneDerivataStampa_,
+  // così Colazione/Spuntini/Pranzo/Cena sono tutte visivamente uniformi.
   function pgHtmlOpzioneFissaStampa_(o, num, verdure, olio){
-    const baseTxt = `${cpEsc(o.base.label)} <span class="pg-g">${cpFmt(o.base.valore)} g</span> ${pgFontePillHtml_(o.base.fonte)}`;
+    const baseTxt = `${cpEsc(o.base.label)} <span class="pg-g">${cpFmt(o.base.valore)} g</span>`;
     const proteicaTxt = o.proteica.testo
-      ? `${cpEsc(o.proteica.testo)} ${pgFontePillHtml_('fisso')}`
-      : `${cpEsc(o.proteica.label)} <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span> ${pgFontePillHtml_(o.proteica.fonte)}`;
+      ? cpEsc(o.proteica.testo)
+      : `${cpEsc(o.proteica.label)} <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span>`;
+    const elenco = `${baseTxt} + ${proteicaTxt} · Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span>`;
     return `<div class="pg-opzione">
       <div class="pg-opzione-num">${num}</div>
-      <div class="pg-opzione-corpo">
-        <div class="pg-opzione-titolo">${cpEsc(o.base.label)} + ${cpEsc(o.proteica.label)}</div>
-        <div class="pg-opzione-alimenti">${baseTxt} · ${proteicaTxt} · <span class="pg-fisso">Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span></span></div>
-      </div>
+      <div class="pg-opzione-corpo"><div class="pg-opzione-titolo">${elenco}</div></div>
     </div>`;
   }
   function pgHtmlStampaCompleta_(piano, imp, meta){
@@ -7256,10 +7248,6 @@
           <table class="pg-equiv-table"><thead><tr><th>In alternativa a Olio <span class="pg-num">${cpFmt(piano.olio)} g</span></th><th style="text-align:right;">Quantità equivalente</th></tr></thead>
             <tbody>${piano.grassiEquivalenza.map(r => `<tr><td>${cpEsc(r.alimento)}</td><td class="pg-g">${cpFmt(r.grammi)} g</td></tr>`).join('')}</tbody>
           </table>
-        </div>
-        <div class="pg-legenda">
-          <span><span class="pg-dot pg-piano"></span> valore preso dal piano settimanale</span>
-          <span><span class="pg-dot pg-preset"></span> valore preimpostato (nessuna fonte trovata quel pasto)</span>
         </div>
         ${footer}
       </div>
