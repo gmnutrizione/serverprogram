@@ -794,7 +794,38 @@
     body.printing-spesa .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; }
     body.printing-spesa .modal-card > *:not(#cp-modal-spesa-view){ display:none !important; }
     body.printing-spesa #cp-modal-spesa-view button{ display:none !important; }
+
+    body.printing-pg > *:not(.modal-overlay){ display:none !important; }
+    body.printing-pg .modal-overlay{ position:static !important; background:none !important; display:block !important; padding:0 !important; }
+    body.printing-pg .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; }
+    body.printing-pg .modal-card > *:not(#pg-stampa-view){ display:none !important; }
+    body.printing-pg #pg-stampa-view button{ display:none !important; }
   }
+
+  /* ---- Piano Generico: sezioni/opzioni nella scheda Studio e nell'anteprima di stampa ---- */
+  .pg-riepilogo{ display:flex; gap:24px; margin-bottom:18px; font-size:13.5px; }
+  .pg-riepilogo b{ display:block; font-size:11.5px; text-transform:uppercase; letter-spacing:0.04em; color:var(--ink-faint); margin-bottom:2px; font-weight:600; }
+  .pg-sezione{ margin-bottom:18px; }
+  .pg-sezione h4{ font-size:14px; margin:0 0 8px; }
+  .pg-vuoto{ font-size:12.8px; color:var(--ink-faint); }
+  .pg-opzione{ display:flex; align-items:center; justify-content:space-between; gap:10px; padding:8px 10px; border:1px solid var(--border-soft); border-radius:8px; margin-bottom:6px; font-size:13px; }
+  .pg-opzione.escluso{ opacity:0.45; }
+  .pg-opzione.escluso .pg-opzione-testo{ text-decoration:line-through; }
+  .pg-opzione-escludi{ border:none; background:none; cursor:pointer; font-size:15px; color:var(--ink-faint); line-height:1; padding:2px 6px; }
+  .pg-opzione-escludi:hover{ color:var(--accent); }
+  @media print{ .pg-opzione-escludi{ display:none !important; } }
+
+  /* ---- Impostazioni Piano Generico: tabella preset + righe di sostituzione ---- */
+  .pg-preset-table{ width:100%; border-collapse:collapse; margin-bottom:6px; font-size:13px; }
+  .pg-preset-table th{ text-align:left; font-weight:600; color:var(--ink-faint); font-size:11.5px; text-transform:uppercase; letter-spacing:0.03em; padding:4px 8px; }
+  .pg-preset-table td{ padding:4px 8px; border-top:1px solid var(--border-soft); }
+  .pg-preset-table td:first-child{ white-space:nowrap; }
+  .pg-preset-table input[type="number"]{ width:100%; min-width:64px; }
+  .pg-riga-equivalenza{ display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+  .pg-riga-equivalenza input[type="text"]{ flex:1; }
+  .pg-riga-equivalenza input[type="number"]{ width:90px; }
+  .pg-riga-equivalenza button{ border:none; background:none; cursor:pointer; font-size:16px; color:var(--ink-faint); line-height:1; padding:4px 6px; }
+  .pg-riga-equivalenza button:hover{ color:var(--accent); }
 
   .p-checkin-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-soft); }
   .p-checkin-row:last-child{ border-bottom:none; }
@@ -1161,6 +1192,10 @@
       <svg viewBox="0 0 24 24" fill="none"><path d="M4 5V19M7 5V19M9.5 5V19M13 5V19M15.5 5V19M16.5 5V19M20 5V19" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       Aggiungi alimento
     </button>
+    <button class="btn ghost" id="btn-impostazioni-nutri" style="display:none;" onclick="apriImpostazioni()">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M12 15.5C13.933 15.5 15.5 13.933 15.5 12C15.5 10.067 13.933 8.5 12 8.5C10.067 8.5 8.5 10.067 8.5 12C8.5 13.933 10.067 15.5 12 15.5Z" stroke="currentColor" stroke-width="1.5"/><path d="M19.4 13.5C19.5 13 19.5 12.5 19.5 12C19.5 11.5 19.5 11 19.4 10.5L21.4 9C21.6 8.8 21.7 8.5 21.5 8.2L19.7 5.1C19.6 4.8 19.3 4.7 19 4.8L16.7 5.7C16.3 5.4 15.8 5.1 15.3 4.9L15 2.5C15 2.2 14.7 2 14.4 2H9.6C9.3 2 9 2.2 9 2.5L8.7 4.9C8.2 5.1 7.7 5.4 7.3 5.7L5 4.8C4.7 4.7 4.4 4.8 4.3 5.1L2.5 8.2C2.3 8.5 2.4 8.8 2.6 9L4.6 10.5C4.5 11 4.5 11.5 4.5 12C4.5 12.5 4.5 13 4.6 13.5L2.6 15C2.4 15.2 2.3 15.5 2.5 15.8L4.3 18.9C4.4 19.2 4.7 19.3 5 19.2L7.3 18.3C7.7 18.6 8.2 18.9 8.7 19.1L9 21.5C9 21.8 9.3 22 9.6 22H14.4C14.7 22 15 21.8 15 21.5L15.3 19.1C15.8 18.9 16.3 18.6 16.7 18.3L19 19.2C19.3 19.3 19.6 19.2 19.7 18.9L21.5 15.8C21.7 15.5 21.6 15.2 21.4 15L19.4 13.5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      Impostazioni
+    </button>
     <button class="btn-logout" id="btn-logout" style="display:none;" onclick="logout()">
       <svg viewBox="0 0 24 24" fill="none"><path d="M15 17L20 12L15 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M20 12H9M9 4H5C3.9 4 3 4.9 3 6V18C3 19.1 3.9 20 5 20H9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
       Esci
@@ -1289,6 +1324,81 @@
             <svg viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Salva modifiche
           </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="impostazioni-overlay" style="display:none;" onclick="if(event.target===this) chiudiImpostazioni();">
+      <div class="modal-card" style="max-width:760px;">
+        <h3>Impostazioni — Piano Generico</h3>
+        <p>Testi di copertina, valori preimpostati e tabelle di sostituzione usati per generare e stampare il Piano Generico dei pazienti. Modificali qui quando vuoi: non serve chiedere di cambiare il codice.</p>
+
+        <h4 style="font-size:14.5px; margin:4px 0 10px;">Copertina e introduzione</h4>
+        <div class="field-grid" style="grid-template-columns:1fr 1fr;">
+          <div class="field"><label>Nome (copertina, in grassetto)</label><input type="text" id="imp-nome" placeholder="Es. Dott. Giovanni Murdaca"></div>
+          <div class="field"><label>Email</label><input type="text" id="imp-email" placeholder="Es. nome@email.com"></div>
+          <div class="field" style="grid-column:1 / -1;"><label>Altri titoli (uno per riga)</label><textarea id="imp-titoli" rows="3" placeholder="Es. Nutrizionista Sportivo&#10;Laureato in Scienze Motorie&#10;Personal Trainer"></textarea></div>
+          <div class="field"><label>N° telefono</label><input type="text" id="imp-telefono" placeholder="Es. 3791074972"></div>
+          <div class="field"><label>P. IVA</label><input type="text" id="imp-piva" placeholder="Es. 02753720024"></div>
+          <div class="field"><label>Iscrizione Albo Biologi n°</label><input type="text" id="imp-albo" placeholder="Es. AA_092973"></div>
+          <div class="field"><label>Frase in fondo alla copertina</label><input type="text" id="imp-slogan" placeholder="Es. Il cambiamento inizia da un singolo passo"></div>
+          <div class="field" style="grid-column:1 / -1;"><label>Testo pagina "Introduzione al percorso alimentare"</label><textarea id="imp-intro" rows="8" placeholder="Come leggere il piano generico, verdura, frutta, acqua, alcol, pasto libero/fuori casa…"></textarea></div>
+        </div>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Verdure e Olio</h4>
+        <p style="font-size:12.5px; color:var(--ink-faint); margin:-2px 0 10px;">Le Verdure sono sempre questo valore fisso, uguale ogni settimana. L'Olio viene preso dal piano quando è segnato quella settimana; questo valore si usa solo come riserva quando non lo è.</p>
+        <table class="pg-preset-table">
+          <thead><tr><th></th><th>Uomo</th><th>Donna</th></tr></thead>
+          <tbody>
+            <tr><td>Verdure (g)</td><td><input type="number" id="pg-verdure-M" min="0"></td><td><input type="number" id="pg-verdure-F" min="0"></td></tr>
+            <tr><td>Olio di riserva (g)</td><td><input type="number" id="pg-olio-M" min="0"></td><td><input type="number" id="pg-olio-F" min="0"></td></tr>
+          </tbody>
+        </table>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Valori preimpostati — Pranzo</h4>
+        <p style="font-size:12.5px; color:var(--ink-faint); margin:-2px 0 10px;">Usati solo quando quella categoria non compare in nessun giorno del piano settimanale di quel paziente. I Formaggi non servono qui: nel piano stampato compare sempre "Formaggio a scelta (vedi tabella)".</p>
+        <table class="pg-preset-table" id="pg-preset-table-pranzo"><thead><tr><th></th><th>Uomo</th><th>Donna</th></tr></thead><tbody></tbody></table>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Valori preimpostati — Cena</h4>
+        <table class="pg-preset-table" id="pg-preset-table-cena"><thead><tr><th></th><th>Uomo</th><th>Donna</th></tr></thead><tbody></tbody></table>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Sostituzioni carboidrati (a cena, al posto del pane)</h4>
+        <p style="font-size:12.5px; color:var(--ink-faint); margin:-2px 0 10px;">Quantità riferite al "Pane di riferimento" qui sotto: vengono scalate automaticamente sulla quantità reale di pane di ogni paziente.</p>
+        <div id="pg-carbo-righe"></div>
+        <button class="btn small ghost" type="button" onclick="pgAggiungiRiga_('carbo')">+ Aggiungi alimento</button>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Sostituzioni grassi (al posto dell'olio)</h4>
+        <div id="pg-grassi-righe"></div>
+        <button class="btn small ghost" type="button" onclick="pgAggiungiRiga_('grassi')">+ Aggiungi alimento</button>
+
+        <h4 style="font-size:14.5px; margin:22px 0 6px;">Valori di riferimento</h4>
+        <div class="field-grid" style="grid-template-columns:1fr 1fr 1fr;">
+          <div class="field"><label>Pane di riferimento (g)</label><input type="number" id="pg-pane-baseline" min="1"></div>
+          <div class="field"><label>Olio di riferimento (g)</label><input type="number" id="pg-olio-baseline" min="1"></div>
+          <div class="field"><label>Peso medio 1 uovo (g)</label><input type="number" id="pg-peso-uovo" min="1"></div>
+        </div>
+
+        <div class="login-error" id="impostazioni-error"></div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn ghost" type="button" onclick="chiudiImpostazioni()">Annulla</button>
+          <button class="btn primary" type="button" id="btn-impostazioni-salva" onclick="salvaImpostazioni()">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Salva modifiche
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay" id="pg-stampa-overlay" style="display:none;" onclick="if(event.target===this) chiudiPgStampa();">
+      <div class="modal-card" style="max-width:760px;">
+        <div id="pg-stampa-view">
+          <h3>Anteprima di stampa — Piano Generico</h3>
+          <p id="pg-stampa-sub">—</p>
+          <div id="pg-stampa-contenuto"></div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:16px;">
+          <button class="btn ghost" type="button" onclick="chiudiPgStampa()">Chiudi</button>
+          <button class="btn primary" type="button" onclick="pgAvviaStampa_()">Stampa / salva PDF</button>
         </div>
       </div>
     </div>
@@ -1661,6 +1771,7 @@
         <button class="tab-btn active" data-tab="panoramica" onclick="setNutriTab('panoramica')">Panoramica</button>
         <button class="tab-btn" data-tab="piano" onclick="setNutriTab('piano')">Piano alimentare</button>
         <button class="tab-btn" data-tab="creapiano" onclick="setNutriTab('creapiano')">Crea piano</button>
+        <button class="tab-btn" data-tab="pianogenerico" onclick="setNutriTab('pianogenerico')">Piano Generico</button>
         <button class="tab-btn" data-tab="misurazioni" onclick="setNutriTab('misurazioni')">Misurazioni</button>
         <button class="tab-btn" data-tab="confronto" onclick="setNutriTab('confronto')">Confronto controlli</button>
       </div>
@@ -1847,6 +1958,29 @@
             <div class="card-head"><h3>Storico piani</h3><p>Media settimanale, registrata ad ogni salvataggio</p></div>
             <div class="cp-history-list" id="cp-history-list"></div>
           </div>
+        </div>
+      </div>
+
+      <!-- ---- PIANO GENERICO ---- -->
+      <div class="tab-panel" id="tab-pianogenerico">
+        <div class="note-strip">
+          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.6"/><path d="M12 8V13" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/><circle cx="12" cy="16" r="0.9" fill="currentColor"/></svg>
+          <div>Il Piano Generico è il documento con alimenti/porzioni/frequenze che consegni ai pazienti, calcolato dal piano settimanale composto in "Crea piano". Colazione, Spuntini e Dopo cena vengono presi così come scritti nel piano; per Pranzo e Cena, quando una categoria non compare in nessun giorno di quella settimana viene usato il valore preimpostato (da Impostazioni).</div>
+        </div>
+
+        <div class="card">
+          <div class="card-head">
+            <div>
+              <h3>Piano Generico</h3>
+              <p id="pg-sub">Non ancora generato per questo paziente.</p>
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button class="btn small ghost" type="button" id="btn-pg-stampa" onclick="pgStampa()" style="display:none;">Stampa</button>
+              <button class="btn small primary" type="button" id="btn-pg-rigenera" onclick="pgRigeneraDalPiano()">Rigenera dal piano</button>
+            </div>
+          </div>
+          <div class="login-error" id="pg-error"></div>
+          <div id="pg-contenuto"></div>
         </div>
       </div>
 
@@ -2507,6 +2641,21 @@
       p_porzione: b.porzione, p_descrizione: b.descrizione, p_ingredienti: b.ingredienti,
       p_immagine: b.immagine, p_barcode: b.barcode,
     })},
+    // ---- Impostazioni Piano Generico: copertina + intro (vedi 09_piano_generico_contenuti.sql) ----
+    pgImpostazioniLeggi: { fn:'pg_impostazioni_leggi', args:p => ({ p_codice: p.codice }) },
+    pgImpostazioniSalva: { fn:'pg_impostazioni_salva', args:b => ({ p_codice: b.codice, p_valori: b.valori }) },
+    // ---- Preimpostati Piano Generico (vedi 10_piano_generico_calcolo.sql) ----
+    pgPresetLeggi:            { fn:'piano_generico_preset_leggi',            args:p => ({ p_codice: p.codice }) },
+    pgPresetSalva:            { fn:'piano_generico_preset_salva',            args:b => ({ p_codice: b.codice, p_sesso: b.sesso, p_verdure: b.verdure, p_olio: b.olio }) },
+    pgPresetCategoriaLeggi:   { fn:'piano_generico_preset_categoria_leggi',  args:p => ({ p_codice: p.codice }) },
+    pgPresetCategoriaSalva:   { fn:'piano_generico_preset_categoria_salva',  args:b => ({ p_codice: b.codice, p_righe: b.righe }) },
+    pgGrassiCarboLeggi:       { fn:'piano_generico_grassi_carbo_leggi',      args:p => ({ p_codice: p.codice }) },
+    pgGrassiSalva:            { fn:'piano_generico_grassi_salva',            args:b => ({ p_codice: b.codice, p_righe: b.righe }) },
+    pgCarboSalva:             { fn:'piano_generico_carbo_salva',             args:b => ({ p_codice: b.codice, p_righe: b.righe }) },
+    pgEsclusioniLeggi:        { fn:'piano_generico_esclusioni_leggi',        args:p => ({ p_codice: p.codice, p_paziente: p.paziente }) },
+    pgEsclusioneImposta:      { fn:'piano_generico_esclusione_imposta',      args:b => ({ p_codice: b.codice, p_paziente: b.paziente, p_chiave_opzione: b.chiaveOpzione, p_escludi: b.escludi }) },
+    pgLeggi:                  { fn:'piano_generico_leggi',                   args:p => ({ p_codice: p.codice, p_paziente: p.paziente }) },
+    pgSalva:                  { fn:'piano_generico_salva',                   args:b => ({ p_codice: b.codice, p_paziente: b.paziente, p_piano_json: b.pianoJson, p_generato_da_riga: b.generatoDaRiga || null }) },
   };
 
   async function apiRpcChiamata_(action, params){
@@ -6405,6 +6554,504 @@
     }, cpZeroNutrienti());
   }
 
+  /* ================= Piano Generico: motore di calcolo =================
+     Vedi 08/09/10/11/12_piano_generico_*.sql su Supabase. Prende il piano
+     settimanale REALE di un paziente (stessa forma di CP_PLAN) e produce la
+     struttura del Piano Generico da stampare: opzioni derivate dal piano per
+     Colazione/Spuntini/Dopo cena, le 9+10 combinazioni fisse di Pranzo/Cena
+     con quantità dal piano se presenti (altrimenti preimpostate), Formaggi
+     sempre "a scelta" senza quantità, Olio unico per pranzo e cena,
+     sostituzioni di pane/olio scalate in proporzione alla quantità reale. */
+  const PG_PASTI_DERIVATI = ['Colazione','Spuntino mattina','Spuntino pomeriggio','Dopo cena'];
+  const PG_CATEGORIE_PRANZO = ['pesce_magro','carne_bianca','carne_rossa','pesce_grasso','legumi','uova','formaggi','proteine_vegetali','pesce_conservato'];
+  const PG_CATEGORIE_CENA   = ['pesce_magro','carne_bianca','carne_rossa','pesce_grasso','legumi','uova','formaggi','proteine_vegetali','affettato','pesce_conservato'];
+  const PG_CATEGORIA_LABEL = {
+    pesce_magro:'Pesce magro', carne_bianca:'Carne bianca', carne_rossa:'Carne rossa', pesce_grasso:'Pesce grasso',
+    legumi:'Legumi', uova:'Uova', formaggi:'Formaggi', proteine_vegetali:'Proteine vegetali',
+    affettato:'Affettato', pesce_conservato:'Pesce conservato'
+  };
+
+  // Il valore "dal piano" quando una categoria compare in più giorni con quantità diverse: quella
+  // più frequente nella settimana; a parità di frequenza, la più alta (Giovanni, 22/09).
+  function pgValorePiuFrequente_(valori){
+    if(!valori.length) return null;
+    const conteggio = new Map();
+    valori.forEach(v => conteggio.set(v, (conteggio.get(v)||0) + 1));
+    let migliore = null, migliorConteggio = -1;
+    conteggio.forEach((n, v) => {
+      if(n > migliorConteggio || (n === migliorConteggio && v > migliore)){ migliore = v; migliorConteggio = n; }
+    });
+    return migliore;
+  }
+
+  // Somma, per un dato giorno/pasto, i grammi degli alimenti del piano che soddisfano matchFn.
+  // Restituisce null se quel giorno/pasto non contiene nessun alimento che soddisfa matchFn.
+  function pgSommaGiorno_(plan, giorno, pasto, foodsById, matchFn){
+    const righe = (plan[giorno] && plan[giorno][pasto]) || [];
+    let tot = 0, trovato = false;
+    righe.forEach(r => {
+      const f = foodsById[r.id];
+      if(f && matchFn(f)){ tot += (Number(r.g)||0); trovato = true; }
+    });
+    return trovato ? tot : null;
+  }
+
+  // Quantità "dal piano" (valore più frequente tra i giorni in cui la categoria compare) per una
+  // singola categoria in un singolo pasto fisso (Pranzo o Cena). null se non compare mai.
+  function pgDalPiano_(plan, giorni, pasto, foodsById, matchFn){
+    const valori = [];
+    giorni.forEach(g => {
+      const v = pgSommaGiorno_(plan, g, pasto, foodsById, matchFn);
+      if(v != null && v > 0) valori.push(v);
+    });
+    return pgValorePiuFrequente_(valori);
+  }
+
+  // Come pgDalPiano_, ma cerca in DUE pasti insieme (usato per l'Olio: un'unica quantità per
+  // pranzo e cena, sommando l'olio trovato nei due pasti di ciascun giorno).
+  function pgDalPianoDuePasti_(plan, giorni, pastoA, pastoB, foodsById, matchFn){
+    const valori = [];
+    giorni.forEach(g => {
+      const a = pgSommaGiorno_(plan, g, pastoA, foodsById, matchFn) || 0;
+      const b = pgSommaGiorno_(plan, g, pastoB, foodsById, matchFn) || 0;
+      const tot = a + b;
+      if(tot > 0) valori.push(tot);
+    });
+    return pgValorePiuFrequente_(valori);
+  }
+
+  function pgTrovaPreset_(presetCategoria, sesso, pasto, categoria){
+    const riga = presetCategoria.find(r => r.sesso===sesso && r.pasto===pasto && r.categoria===categoria);
+    return riga ? { valore:Number(riga.quantita)||0, unita:riga.unita||'g' } : { valore:0, unita:'g' };
+  }
+
+  // Costruisce le 9 (Pranzo) o 10 (Cena) opzioni fisse di un pasto: Cereale/Pane + una categoria
+  // proteica ciascuna. Formaggi non ha mai una quantità stampata (testo fisso "a scelta").
+  function pgOpzioniFisse_(plan, giorni, pasto, foodsById, presetCategoria, sesso, pesoMedioUovo){
+    const categorie = pasto === 'Pranzo' ? PG_CATEGORIE_PRANZO : PG_CATEGORIE_CENA;
+    const baseCategoria = pasto === 'Pranzo' ? 'cereale' : 'pane';
+    const baseLabel = pasto === 'Pranzo' ? 'Cereale' : 'Pane';
+
+    const baseDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => !!f.fonteCarboidrati);
+    const basePreset = pgTrovaPreset_(presetCategoria, sesso, pasto, baseCategoria);
+    const baseValore = baseDalPiano != null ? baseDalPiano : basePreset.valore;
+
+    const opzioni = categorie.map(cat => {
+      const chiave = (pasto === 'Pranzo' ? 'pranzo_' : 'cena_') + cat;
+      const label = PG_CATEGORIA_LABEL[cat];
+      const base = { label:baseLabel, valore:baseValore, unita:'g' };
+
+      if(cat === 'formaggi'){
+        return { chiave, categoria:cat, base, proteica:{ label, testo:'Formaggio a scelta (vedi tabella)' } };
+      }
+      if(cat === 'uova'){
+        const grDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => f.categoriaProteica === 'uova');
+        let valore, unita = 'pz';
+        if(grDalPiano != null){
+          valore = Math.max(1, Math.round(grDalPiano / (pesoMedioUovo || 60)));
+        } else {
+          const preset = pgTrovaPreset_(presetCategoria, sesso, pasto, cat);
+          valore = preset.valore; unita = preset.unita || 'pz';
+        }
+        return { chiave, categoria:cat, base, proteica:{ label, valore, unita } };
+      }
+      const grDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => f.categoriaProteica === cat);
+      const preset = pgTrovaPreset_(presetCategoria, sesso, pasto, cat);
+      const valore = grDalPiano != null ? grDalPiano : preset.valore;
+      return { chiave, categoria:cat, base, proteica:{ label, valore, unita: preset.unita || 'g' } };
+    });
+
+    return { opzioni, baseValore };
+  }
+
+  // Firma stabile di una combinazione di alimenti (per confrontare/deduplicare le opzioni derivate
+  // di Colazione/Spuntini/Dopo cena): ordinata, indipendente dall'ordine di inserimento nel piano.
+  function pgFirmaCombo_(righe){
+    return righe.map(r => r.id + ':' + r.g).slice().sort().join(',');
+  }
+
+  // Opzioni derivate per un pasto "libero" (Colazione, Spuntino mattina, Spuntino pomeriggio, Dopo
+  // cena): una per ogni combinazione DIVERSA trovata nella settimana (stessa combinazione su giorni
+  // diversi conta una volta sola). La chiave di esclusione è calcolata dal contenuto, così resta
+  // stabile tra una rigenerazione e l'altra se la combinazione non cambia.
+  function pgOpzioniDerivate_(plan, giorni, pasto, foodsById){
+    const viste = new Map();
+    giorni.forEach(g => {
+      const righe = ((plan[g] && plan[g][pasto]) || []).filter(r => foodsById[r.id]);
+      if(!righe.length) return;
+      const firma = pgFirmaCombo_(righe);
+      if(viste.has(firma)) return;
+      viste.set(firma, righe.map(r => ({ id:r.id, nome:foodsById[r.id].nome, g:r.g })));
+    });
+    const opzioni = [];
+    viste.forEach((righe, firma) => opzioni.push({ chiave: pasto + '|' + firma, righe }));
+    return opzioni;
+  }
+
+  // Sostituzioni (carboidrati o grassi): scala ogni riga della tabella universale in proporzione
+  // alla quantità reale (pane o olio) di questo paziente rispetto al valore di riferimento
+  // (pg_pane_baseline_g / pg_olio_baseline_g), a parità di kcal circa. Arrotonda al grammo, così se
+  // la quantità reale coincide col riferimento il valore stampato resta esattamente quello inserito
+  // in Impostazioni (nessun arrotondamento superfluo quando non serve scalare).
+  function pgScalaEquivalenza_(righe, valoreReale, baseline){
+    if(!baseline) return righe.map(r => ({ alimento:r.alimento, grammi:r.grammi }));
+    const fattore = valoreReale / baseline;
+    return righe.map(r => ({ alimento:r.alimento, grammi: Math.max(1, Math.round(r.grammi * fattore)) }));
+  }
+
+  // pgGenera(plan, sesso, foodsById, imp) — funzione principale: dato il piano settimanale REALE
+  // di un paziente (stessa forma di CP_PLAN), il suo sesso ('M'/'F'), il catalogo alimenti
+  // (CP_FOODS_BY_ID) e i dati letti da Impostazioni, restituisce la struttura completa del Piano
+  // Generico pronta da stampare (e da salvare con piano_generico_salva).
+  function pgGenera(plan, sesso, foodsById, imp){
+    const giorni = CP_GIORNI;
+    const s = (sesso === 'F') ? 'F' : 'M';
+    const pesoMedioUovo = Number(imp.pesoMedioUovoG) || 60;
+    const paneBaseline = Number(imp.paneBaselineG) || 60;
+    const olioBaseline = Number(imp.olioBaselineG) || 15;
+
+    const presetVerdureOlio = (imp.presetVerdureOlio || []).find(r => r.sesso === s) || { verdure:200, olio:10 };
+
+    const derivati = {};
+    PG_PASTI_DERIVATI.forEach(pasto => { derivati[pasto] = pgOpzioniDerivate_(plan, giorni, pasto, foodsById); });
+
+    const risPranzo = pgOpzioniFisse_(plan, giorni, 'Pranzo', foodsById, imp.presetCategoria || [], s, pesoMedioUovo);
+    const risCena   = pgOpzioniFisse_(plan, giorni, 'Cena',   foodsById, imp.presetCategoria || [], s, pesoMedioUovo);
+
+    const olioDalPiano = pgDalPianoDuePasti_(plan, giorni, 'Pranzo', 'Cena', foodsById, f => !!f.fonteGrassi);
+    const olio = olioDalPiano != null ? olioDalPiano : (Number(presetVerdureOlio.olio) || 10);
+
+    return {
+      verdure: Number(presetVerdureOlio.verdure) || 200,
+      olio,
+      derivati,
+      pranzo: risPranzo.opzioni,
+      cena: risCena.opzioni,
+      carboEquivalenza: pgScalaEquivalenza_(imp.carboEquivalenza || [], risCena.baseValore, paneBaseline),
+      grassiEquivalenza: pgScalaEquivalenza_(imp.grassiEquivalenza || [], olio, olioBaseline),
+    };
+  }
+
+  // Applica le esclusioni per-paziente (piano_generico_esclusioni) al piano generato: marca ogni
+  // opzione con escluso:true/false, senza toglierle (così l'interfaccia può ri-mostrarle col ✕).
+  function pgApplicaEsclusioni(piano, chiaviEscluse){
+    const escl = new Set(chiaviEscluse || []);
+    const segna = o => Object.assign({}, o, { escluso: escl.has(o.chiave) });
+    const derivati = {};
+    Object.keys(piano.derivati).forEach(pasto => { derivati[pasto] = piano.derivati[pasto].map(segna); });
+    return Object.assign({}, piano, {
+      derivati,
+      pranzo: piano.pranzo.map(segna),
+      cena: piano.cena.map(segna),
+    });
+  }
+
+  /* ================= Impostazioni Piano Generico (copertina + intro) ================= */
+  let IMPOSTAZIONI_PG_CACHE = null; // { pg_nome_professionista, pg_titoli_professionista, pg_email, ... } — null finché non caricate
+  // Disegna la tabella dei valori preimpostati di un pasto fisso (Pranzo o Cena): una riga per
+  // Cereale/Pane + ogni categoria proteica (Formaggi esclusa: non ha mai una quantità).
+  function pgRenderPresetTable_(pasto, categorie, righe){
+    const tbody = document.querySelector('#pg-preset-table-' + (pasto === 'Pranzo' ? 'pranzo' : 'cena') + ' tbody');
+    if(!tbody) return;
+    const trova = (cat, sesso) => {
+      const r = righe.find(x => x.pasto === pasto && x.categoria === cat && x.sesso === sesso);
+      return (r && r.quantita != null) ? r.quantita : '';
+    };
+    const baseCat = pasto === 'Pranzo' ? 'cereale' : 'pane';
+    const baseLabel = pasto === 'Pranzo' ? 'Cereale' : 'Pane';
+    const righeCat = [baseCat].concat(categorie.filter(c => c !== 'formaggi'));
+    tbody.innerHTML = righeCat.map(cat => {
+      const label = cat === baseCat ? baseLabel : PG_CATEGORIA_LABEL[cat];
+      const unita = cat === 'uova' ? ' (pz)' : ' (g)';
+      return `<tr>
+        <td>${cpEsc(label)}${unita}</td>
+        <td><input type="number" min="0" data-pg-preset="${pasto}|${cat}|M" value="${cpEsc(trova(cat,'M'))}"></td>
+        <td><input type="number" min="0" data-pg-preset="${pasto}|${cat}|F" value="${cpEsc(trova(cat,'F'))}"></td>
+      </tr>`;
+    }).join('');
+  }
+
+  // Righe dinamiche delle tabelle di sostituzione (carboidrati/grassi): aggiungi/rimuovi liberamente,
+  // si leggono al momento del salvataggio scorrendo il DOM (niente stato JS separato da sincronizzare).
+  function pgRigaEquivalenzaHtml_(alimento, grammi){
+    return `<div class="pg-riga-equivalenza">
+      <input type="text" placeholder="Alimento" value="${cpEsc(alimento||'')}">
+      <input type="number" min="0" placeholder="g" value="${grammi==null||grammi===''?'':cpEsc(grammi)}">
+      <button type="button" title="Rimuovi" onclick="this.closest('.pg-riga-equivalenza').remove()">✕</button>
+    </div>`;
+  }
+  function pgRenderRigheEquivalenza_(tipo, righe){
+    const cont = document.getElementById('pg-' + tipo + '-righe');
+    if(!cont) return;
+    const base = (righe && righe.length) ? righe : [{alimento:'', grammi:''}];
+    cont.innerHTML = base.map(r => pgRigaEquivalenzaHtml_(r.alimento, r.grammi)).join('');
+  }
+  function pgAggiungiRiga_(tipo){
+    document.getElementById('pg-' + tipo + '-righe').insertAdjacentHTML('beforeend', pgRigaEquivalenzaHtml_('', ''));
+  }
+  function pgLeggiRigheEquivalenza_(tipo){
+    const cont = document.getElementById('pg-' + tipo + '-righe');
+    return Array.from(cont.querySelectorAll('.pg-riga-equivalenza')).map(div => {
+      const inputs = div.querySelectorAll('input');
+      return { alimento: inputs[0].value.trim(), grammi: parseFloat(inputs[1].value) || 0 };
+    }).filter(r => r.alimento);
+  }
+
+  async function apriImpostazioni(){
+    document.getElementById('impostazioni-overlay').style.display = 'flex';
+    document.getElementById('impostazioni-error').textContent = '';
+    try{
+      const [resImp, resPreset, resPresetCat, resGrassiCarbo] = await Promise.all([
+        apiGet('pgImpostazioniLeggi', { codice: SESSION.codice }),
+        apiGet('pgPresetLeggi', { codice: SESSION.codice }),
+        apiGet('pgPresetCategoriaLeggi', { codice: SESSION.codice }),
+        apiGet('pgGrassiCarboLeggi', { codice: SESSION.codice }),
+      ]);
+      if(!resImp.ok){ showToast(resImp.error || 'Errore nel caricamento delle impostazioni.'); return; }
+      IMPOSTAZIONI_PG_CACHE = resImp.impostazioni || {};
+      document.getElementById('imp-nome').value = IMPOSTAZIONI_PG_CACHE.pg_nome_professionista || '';
+      document.getElementById('imp-titoli').value = IMPOSTAZIONI_PG_CACHE.pg_titoli_professionista || '';
+      document.getElementById('imp-email').value = IMPOSTAZIONI_PG_CACHE.pg_email || '';
+      document.getElementById('imp-telefono').value = IMPOSTAZIONI_PG_CACHE.pg_telefono || '';
+      document.getElementById('imp-piva').value = IMPOSTAZIONI_PG_CACHE.pg_piva || '';
+      document.getElementById('imp-albo').value = IMPOSTAZIONI_PG_CACHE.pg_albo_biologi || '';
+      document.getElementById('imp-slogan').value = IMPOSTAZIONI_PG_CACHE.pg_slogan || '';
+      document.getElementById('imp-intro').value = IMPOSTAZIONI_PG_CACHE.pg_intro_testo || '';
+      document.getElementById('pg-pane-baseline').value = IMPOSTAZIONI_PG_CACHE.pg_pane_baseline_g || 60;
+      document.getElementById('pg-olio-baseline').value = IMPOSTAZIONI_PG_CACHE.pg_olio_baseline_g || 15;
+      document.getElementById('pg-peso-uovo').value = IMPOSTAZIONI_PG_CACHE.pg_peso_medio_uovo_g || 60;
+
+      if(resPreset.ok){
+        (resPreset.preset || []).forEach(r => {
+          const elV = document.getElementById('pg-verdure-' + r.sesso), elO = document.getElementById('pg-olio-' + r.sesso);
+          if(elV) elV.value = r.verdure != null ? r.verdure : '';
+          if(elO) elO.value = r.olio != null ? r.olio : '';
+        });
+      }
+      if(resPresetCat.ok){
+        pgRenderPresetTable_('Pranzo', PG_CATEGORIE_PRANZO, resPresetCat.righe || []);
+        pgRenderPresetTable_('Cena', PG_CATEGORIE_CENA, resPresetCat.righe || []);
+      }
+      if(resGrassiCarbo.ok){
+        pgRenderRigheEquivalenza_('carbo', resGrassiCarbo.carboEquivalenza || []);
+        pgRenderRigheEquivalenza_('grassi', resGrassiCarbo.grassiEquivalenza || []);
+      }
+    } catch(err){
+      showToast('Errore di connessione: ' + err.message);
+    }
+  }
+  function chiudiImpostazioni(){
+    document.getElementById('impostazioni-overlay').style.display = 'none';
+  }
+  async function salvaImpostazioni(){
+    const btnEl = document.getElementById('btn-impostazioni-salva');
+    const errEl = document.getElementById('impostazioni-error');
+    errEl.textContent = '';
+    const valori = {
+      pg_nome_professionista: document.getElementById('imp-nome').value.trim(),
+      pg_titoli_professionista: document.getElementById('imp-titoli').value.replace(/\r\n/g, '\n').trim(),
+      pg_email: document.getElementById('imp-email').value.trim(),
+      pg_telefono: document.getElementById('imp-telefono').value.trim(),
+      pg_piva: document.getElementById('imp-piva').value.trim(),
+      pg_albo_biologi: document.getElementById('imp-albo').value.trim(),
+      pg_slogan: document.getElementById('imp-slogan').value.trim(),
+      pg_intro_testo: document.getElementById('imp-intro').value.replace(/\r\n/g, '\n').trim(),
+      pg_pane_baseline_g: String(parseFloat(document.getElementById('pg-pane-baseline').value) || 60),
+      pg_olio_baseline_g: String(parseFloat(document.getElementById('pg-olio-baseline').value) || 15),
+      pg_peso_medio_uovo_g: String(parseFloat(document.getElementById('pg-peso-uovo').value) || 60),
+    };
+    const presetCategoriaRighe = Array.from(document.querySelectorAll('#impostazioni-overlay [data-pg-preset]')).map(inp => {
+      const [pasto, categoria, sesso] = inp.dataset.pgPreset.split('|');
+      return { sesso, pasto, categoria, quantita: parseFloat(inp.value) || 0 };
+    });
+    const carboRighe = pgLeggiRigheEquivalenza_('carbo');
+    const grassiRighe = pgLeggiRigheEquivalenza_('grassi');
+
+    cpBottoneCaricando_(btnEl, 'Salvataggio…');
+    try{
+      const risultati = await Promise.all([
+        apiPost('pgImpostazioniSalva', { codice: SESSION.codice, valori }),
+        apiPost('pgPresetSalva', { codice: SESSION.codice, sesso:'M', verdure: parseFloat(document.getElementById('pg-verdure-M').value) || 0, olio: parseFloat(document.getElementById('pg-olio-M').value) || 0 }),
+        apiPost('pgPresetSalva', { codice: SESSION.codice, sesso:'F', verdure: parseFloat(document.getElementById('pg-verdure-F').value) || 0, olio: parseFloat(document.getElementById('pg-olio-F').value) || 0 }),
+        apiPost('pgPresetCategoriaSalva', { codice: SESSION.codice, righe: presetCategoriaRighe }),
+        apiPost('pgCarboSalva', { codice: SESSION.codice, righe: carboRighe }),
+        apiPost('pgGrassiSalva', { codice: SESSION.codice, righe: grassiRighe }),
+      ]);
+      const fallito = risultati.find(r => !r.ok);
+      if(fallito){
+        errEl.textContent = fallito.error || 'Errore nel salvataggio.';
+        return;
+      }
+      IMPOSTAZIONI_PG_CACHE = Object.assign({}, IMPOSTAZIONI_PG_CACHE, valori);
+      chiudiImpostazioni();
+      showToast('Impostazioni salvate.');
+    } catch(err){
+      errEl.textContent = 'Errore di connessione: ' + err.message;
+    } finally {
+      cpBottoneFinito_(btnEl);
+    }
+  }
+
+  /* ================= Piano Generico: scheda Studio (per-paziente) ================= */
+  let PG_STATO = null;   // { dati, generatoDaRiga, aggiornatoIl } — piano generato/caricato per il paziente aperto (null se mai generato)
+  let PG_ESCLUSE = [];   // chiavi escluse per il paziente aperto
+
+  function pgTestoProteica_(p){
+    if(p.testo) return p.testo;
+    return cpEsc(p.label) + ' ' + cpFmt(p.valore) + (p.unita === 'pz' ? ' pz' : ' g');
+  }
+  function pgHtmlOpzioneFissa_(o){
+    return `<div class="pg-opzione${o.escluso?' escluso':''}">
+      <div class="pg-opzione-testo">${cpEsc(o.base.label)} ${cpFmt(o.base.valore)} g + ${pgTestoProteica_(o.proteica)}</div>
+      <button type="button" class="pg-opzione-escludi" title="${o.escluso?'Includi di nuovo':'Escludi per questo paziente'}" onclick='pgToggleEsclusione(${JSON.stringify(o.chiave)}, ${!o.escluso})'>${o.escluso?'↺':'✕'}</button>
+    </div>`;
+  }
+  function pgHtmlOpzioneDerivata_(o){
+    const elenco = o.righe.map(r => cpEsc(cpNomeSenzaMarca(r.nome)) + ' ' + cpFmt(r.g) + ' g').join(' + ');
+    return `<div class="pg-opzione${o.escluso?' escluso':''}">
+      <div class="pg-opzione-testo">${elenco}</div>
+      <button type="button" class="pg-opzione-escludi" title="${o.escluso?'Includi di nuovo':'Escludi per questo paziente'}" onclick='pgToggleEsclusione(${JSON.stringify(o.chiave)}, ${!o.escluso})'>${o.escluso?'↺':'✕'}</button>
+    </div>`;
+  }
+  function pgHtmlPiano_(piano){
+    const sezDerivata = nome => {
+      const opz = piano.derivati[nome] || [];
+      if(!opz.length) return `<div class="pg-sezione"><h4>${cpEsc(nome)}</h4><p class="pg-vuoto">Nessuna opzione trovata nel piano settimanale per questo pasto.</p></div>`;
+      return `<div class="pg-sezione"><h4>${cpEsc(nome)}</h4>${opz.map(pgHtmlOpzioneDerivata_).join('')}</div>`;
+    };
+    const sezFissa = (nome, opz) => `<div class="pg-sezione"><h4>${cpEsc(nome)}</h4>${opz.map(pgHtmlOpzioneFissa_).join('')}</div>`;
+    const sezEquivalenza = (nome, righe) => `<div class="pg-sezione"><h4>${cpEsc(nome)}</h4>${righe.length ? righe.map(r => `<div class="pg-opzione"><div class="pg-opzione-testo">${cpEsc(r.alimento)} — ${cpFmt(r.grammi)} g</div></div>`).join('') : '<p class="pg-vuoto">Nessuna riga impostata (Impostazioni → Sostituzioni).</p>'}</div>`;
+    return `
+      <div class="pg-riepilogo">
+        <div><b>Verdure</b>${cpFmt(piano.verdure)} g (sempre fisso)</div>
+        <div><b>Olio</b>${cpFmt(piano.olio)} g (uguale a pranzo e cena)</div>
+      </div>
+      ${sezDerivata('Colazione')}
+      ${sezDerivata('Spuntino mattina')}
+      ${sezDerivata('Spuntino pomeriggio')}
+      ${sezDerivata('Dopo cena')}
+      ${sezFissa('Pranzo', piano.pranzo)}
+      ${sezFissa('Cena', piano.cena)}
+      ${sezEquivalenza('Sostituzioni carboidrati (a cena, al posto del pane)', piano.carboEquivalenza)}
+      ${sezEquivalenza("Sostituzioni grassi (al posto dell'olio)", piano.grassiEquivalenza)}
+    `;
+  }
+
+  async function renderPianoGenericoTab(){
+    const subEl = document.getElementById('pg-sub');
+    const contEl = document.getElementById('pg-contenuto');
+    const errEl = document.getElementById('pg-error');
+    const stampaBtn = document.getElementById('btn-pg-stampa');
+    errEl.textContent = '';
+    if(!currentPatientCode) return;
+    subEl.textContent = 'Caricamento…';
+    contEl.innerHTML = '';
+    stampaBtn.style.display = 'none';
+    try{
+      const [resPiano, resEscl] = await Promise.all([
+        apiGet('pgLeggi', { codice: SESSION.codice, paziente: currentPatientCode }),
+        apiGet('pgEsclusioniLeggi', { codice: SESSION.codice, paziente: currentPatientCode }),
+      ]);
+      PG_ESCLUSE = (resEscl.ok && resEscl.chiavi) || [];
+      PG_STATO = (resPiano.ok && resPiano.piano) || null;
+      pgRenderStato_();
+    } catch(err){
+      subEl.textContent = '—';
+      errEl.textContent = 'Errore di connessione: ' + err.message;
+    }
+  }
+  function pgRenderStato_(){
+    const subEl = document.getElementById('pg-sub');
+    const contEl = document.getElementById('pg-contenuto');
+    const stampaBtn = document.getElementById('btn-pg-stampa');
+    if(!PG_STATO){
+      subEl.textContent = 'Non ancora generato per questo paziente — premi "Rigenera dal piano".';
+      contEl.innerHTML = '';
+      stampaBtn.style.display = 'none';
+      return;
+    }
+    subEl.textContent = 'Aggiornato il ' + fmtDateFull(new Date(PG_STATO.aggiornatoIl));
+    stampaBtn.style.display = 'flex';
+    contEl.innerHTML = pgHtmlPiano_(pgApplicaEsclusioni(PG_STATO.dati, PG_ESCLUSE));
+  }
+  async function pgToggleEsclusione(chiave, escludi){
+    try{
+      const res = await apiPost('pgEsclusioneImposta', { codice: SESSION.codice, paziente: currentPatientCode, chiaveOpzione: chiave, escludi });
+      if(!res.ok){ showToast(res.error || 'Errore nel salvataggio.'); return; }
+      PG_ESCLUSE = escludi ? PG_ESCLUSE.concat(PG_ESCLUSE.includes(chiave) ? [] : [chiave]) : PG_ESCLUSE.filter(c => c !== chiave);
+      pgRenderStato_();
+    } catch(err){
+      showToast('Errore di connessione: ' + err.message);
+    }
+  }
+  async function pgRigeneraDalPiano(){
+    const btn = document.getElementById('btn-pg-rigenera');
+    const errEl = document.getElementById('pg-error');
+    errEl.textContent = '';
+    if(!currentPatientCode) return;
+    const sesso = String((currentPatientMeta && currentPatientMeta.Sesso) || '').trim().toUpperCase();
+    if(sesso !== 'M' && sesso !== 'F'){
+      errEl.textContent = 'Imposta il Sesso nella scheda di questo paziente prima di generare il Piano Generico.';
+      return;
+    }
+    cpBottoneCaricando_(btn, 'Generazione…');
+    try{
+      await cpLoadFoods();
+      if(!CP_FOODS_BY_ID || CP_FOODS_ERROR){ errEl.textContent = 'Errore nel caricamento del database alimenti.'; return; }
+      const [resPiano, resPreset, resPresetCat, resGrassiCarbo, resImp] = await Promise.all([
+        apiGet('pianoStrutturato', { codice: SESSION.codice, paziente: currentPatientCode, soloAttivo: '1' }),
+        apiGet('pgPresetLeggi', { codice: SESSION.codice }),
+        apiGet('pgPresetCategoriaLeggi', { codice: SESSION.codice }),
+        apiGet('pgGrassiCarboLeggi', { codice: SESSION.codice }),
+        apiGet('pgImpostazioniLeggi', { codice: SESSION.codice }),
+      ]);
+      if(!resPiano.ok || !resPiano.attivo || !resPiano.attivo.Plan){
+        errEl.textContent = 'Questo paziente non ha ancora un piano settimanale composto in "Crea piano".';
+        return;
+      }
+      if(!resPreset.ok || !resPresetCat.ok || !resGrassiCarbo.ok){
+        errEl.textContent = 'Errore nel caricamento dei valori preimpostati (Impostazioni).';
+        return;
+      }
+      const plan = resPiano.attivo.Plan;
+      CP_GIORNI.forEach(g => { if(!plan[g]) plan[g] = {}; CP_MEALS.forEach(m => { if(!plan[g][m]) plan[g][m] = []; }); });
+      const imp = {
+        presetVerdureOlio: resPreset.preset || [],
+        presetCategoria: resPresetCat.righe || [],
+        carboEquivalenza: (resGrassiCarbo.carboEquivalenza || []).map(r => ({ alimento:r.alimento, grammi:Number(r.grammi)||0 })),
+        grassiEquivalenza: (resGrassiCarbo.grassiEquivalenza || []).map(r => ({ alimento:r.alimento, grammi:Number(r.grammi)||0 })),
+        pesoMedioUovoG: resImp.ok ? Number(resImp.impostazioni.pg_peso_medio_uovo_g) : 60,
+        paneBaselineG: resImp.ok ? Number(resImp.impostazioni.pg_pane_baseline_g) : 60,
+        olioBaselineG: resImp.ok ? Number(resImp.impostazioni.pg_olio_baseline_g) : 15,
+      };
+      const piano = pgGenera(plan, sesso, CP_FOODS_BY_ID, imp);
+      const salva = await apiPost('pgSalva', { codice: SESSION.codice, paziente: currentPatientCode, pianoJson: piano, generatoDaRiga: resPiano.attivo.Riga || null });
+      if(!salva.ok){ errEl.textContent = salva.error || 'Errore nel salvataggio.'; return; }
+      PG_STATO = { dati: piano, generatoDaRiga: resPiano.attivo.Riga || null, aggiornatoIl: new Date().toISOString() };
+      pgRenderStato_();
+      showToast('Piano Generico rigenerato');
+    } catch(err){
+      errEl.textContent = 'Errore di connessione: ' + err.message;
+    } finally {
+      cpBottoneFinito_(btn);
+    }
+  }
+  function pgStampa(){
+    if(!PG_STATO) return;
+    document.getElementById('pg-stampa-sub').textContent = (currentPatientMeta && currentPatientMeta.Nome) ? ('Paziente: ' + currentPatientMeta.Nome) : '';
+    document.getElementById('pg-stampa-contenuto').innerHTML = pgHtmlPiano_(pgApplicaEsclusioni(PG_STATO.dati, PG_ESCLUSE));
+    document.getElementById('pg-stampa-overlay').style.display = 'flex';
+  }
+  function chiudiPgStampa(){
+    document.getElementById('pg-stampa-overlay').style.display = 'none';
+  }
+  function pgAvviaStampa_(){
+    document.body.classList.add('printing-pg');
+    const cleanup = () => document.body.classList.remove('printing-pg');
+    window.addEventListener('afterprint', cleanup, { once:true });
+    window.print();
+  }
+
   async function apriDiario(){
     document.getElementById('diario-overlay').style.display = 'flex';
     document.getElementById('diario-list-view').style.display = '';
@@ -6827,6 +7474,7 @@
     if(name==='panoramica') renderPanoramica();
     if(name==='piano') renderPianoTab();
     if(name==='creapiano') renderCreaPianoTab();
+    if(name==='pianogenerico') renderPianoGenericoTab();
     if(name==='misurazioni'){ renderMisCategorie(); renderBigChart(); renderSparkGrid(); }
     if(name==='confronto') renderCompareTable();
   }
@@ -6871,6 +7519,7 @@
       document.getElementById('btn-ricettario-nutri').style.display = 'flex';
       document.getElementById('btn-diario-nutri').style.display = 'flex';
       document.getElementById('btn-alimento-nutri').style.display = 'flex';
+      document.getElementById('btn-impostazioni-nutri').style.display = 'flex';
       document.getElementById('topbar-brand-name').textContent = 'GM Program - Gestionale pazienti';
       document.getElementById('topbar-brand-tag').textContent = 'Piano alimentare & monitoraggio pazienti';
       document.getElementById('topbar-brand-tag').style.display = '';
@@ -6908,6 +7557,7 @@
     document.getElementById('btn-ricettario-nutri').style.display = 'none';
     document.getElementById('btn-diario-nutri').style.display = 'none';
     document.getElementById('btn-alimento-nutri').style.display = 'none';
+    document.getElementById('btn-impostazioni-nutri').style.display = 'none';
     document.getElementById('topbar-brand-name').textContent = 'GM - Nutrizione e Benessere';
     document.getElementById('topbar-brand-tag').style.display = 'none';
     document.getElementById('login-code').value = '';
