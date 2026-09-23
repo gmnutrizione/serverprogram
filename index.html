@@ -4302,7 +4302,20 @@
     `).join('');
     document.getElementById('cp-modal-overlay').style.display = 'flex';
   }
+  // Il CSS di stampa (vedi "body.printing-X > *:not(.modal-overlay)") nasconde tutto tranne la
+  // finestra modale aperta, ma funziona solo se quella finestra è un figlio DIRETTO di <body>: la
+  // regola usa il combinatore ">", non un selettore generico. Le finestre modali dell'app sono però
+  // scritte dentro #view-nutri/#view-paziente (per comodità di manutenzione del file), quindi senza
+  // questo spostamento la stampa uscirebbe sempre bianca (il contenitore della vista viene
+  // nascosto, e con lui tutto quello che contiene, modale compresa). Le finestre modali sono tutte
+  // "position:fixed" a schermo intero, quindi spostarle nel DOM non cambia nulla a livello visivo:
+  // è sicuro farlo una volta sola, alla prima stampa, e lasciarle lì.
+  function cpAssicuraOverlayInBody_(id){
+    const el = document.getElementById(id);
+    if(el && el.parentElement !== document.body) document.body.appendChild(el);
+  }
   function cpStampaSpesa(){
+    cpAssicuraOverlayInBody_('cp-modal-overlay');
     document.body.classList.add('printing-spesa');
     const cleanup = () => document.body.classList.remove('printing-spesa');
     window.addEventListener('afterprint', cleanup, { once:true });
@@ -7363,6 +7376,7 @@
     document.getElementById('pg-stampa-overlay').style.display = 'none';
   }
   function pgAvviaStampa_(){
+    cpAssicuraOverlayInBody_('pg-stampa-overlay');
     document.body.classList.add('printing-pg');
     const cleanup = () => document.body.classList.remove('printing-pg');
     window.addEventListener('afterprint', cleanup, { once:true });
