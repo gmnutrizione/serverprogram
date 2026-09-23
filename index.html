@@ -789,16 +789,27 @@
   .p-loading-riga{ display:flex; align-items:center; justify-content:center; gap:8px; }
 
   @media print{
+    /* Sia il modale della lista spesa sia quello del Piano Generico sono, sullo schermo, riquadri
+       con altezza limitata e scorrimento interno (".modal-card{ max-height:...; overflow:auto; }",
+       più la lista della spesa con il suo scorrimento proprio) — indispensabile a video, ma in
+       stampa un contenitore con overflow:auto taglia tutto ciò che non entra nella prima "finestra"
+       invece di andare a capo pagina: è la causa del "esce solo la prima pagina". In stampa vanno
+       quindi resi entrambi a altezza libera, così il contenuto scorre su tutte le pagine necessarie.
+       Titolo e sottotitolo dell'anteprima (pensati per lo schermo, tipo "Anteprima per ...") vanno
+       invece nascosti: non fanno parte del documento vero e proprio da consegnare al paziente. */
     body.printing-spesa > *:not(.modal-overlay){ display:none !important; }
     body.printing-spesa .modal-overlay{ position:static !important; background:none !important; display:block !important; padding:0 !important; }
-    body.printing-spesa .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; }
+    body.printing-spesa .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; max-height:none !important; overflow:visible !important; }
     body.printing-spesa .modal-card > *:not(#cp-modal-spesa-view){ display:none !important; }
+    body.printing-spesa #cp-modal-spesa-view > h3, body.printing-spesa #cp-modal-spesa-view > p{ display:none !important; }
     body.printing-spesa #cp-modal-spesa-view button{ display:none !important; }
+    body.printing-spesa #cp-spesa-nutri-list{ max-height:none !important; overflow:visible !important; }
 
     body.printing-pg > *:not(.modal-overlay){ display:none !important; }
     body.printing-pg .modal-overlay{ position:static !important; background:none !important; display:block !important; padding:0 !important; }
-    body.printing-pg .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; }
+    body.printing-pg .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; max-height:none !important; overflow:visible !important; }
     body.printing-pg .modal-card > *:not(#pg-stampa-view){ display:none !important; }
+    body.printing-pg #pg-stampa-view > h3, body.printing-pg #pg-stampa-view > p{ display:none !important; }
     body.printing-pg #pg-stampa-view button{ display:none !important; }
   }
 
