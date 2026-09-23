@@ -827,6 +827,118 @@
   .pg-riga-equivalenza button{ border:none; background:none; cursor:pointer; font-size:16px; color:var(--ink-faint); line-height:1; padding:4px 6px; }
   .pg-riga-equivalenza button:hover{ color:var(--accent); }
 
+  /* ================= Piano Generico: documento di stampa (copertina + pagine) =================
+     Riprende esattamente l'aspetto del mockup approvato — variabili proprie (prefisso --pg-) e ogni
+     selettore annidato sotto .pg-doc, così non tocca in nessun modo lo stile del resto dell'app. */
+  .pg-doc{
+    --pg-ink:#17221D; --pg-ink-soft:#48564C; --pg-ink-faint:#7C8A76;
+    --pg-paper:#F1F3EC; --pg-surface-raised:#FFFFFF;
+    --pg-border:#DCE2D3; --pg-border-soft:#E7EBE0;
+    --pg-accent:#0B8A78; --pg-accent-ink:#04352D; --pg-accent-soft:#E1F0EB;
+    --pg-good:#1F9463; --pg-good-soft:#E4F3EA;
+    --pg-warning:#C79A2E; --pg-warning-soft:#FAF1DD;
+    --pg-font-display:'Fraunces', Georgia, serif;
+    --pg-font-body:'IBM Plex Sans', -apple-system, 'Segoe UI', sans-serif;
+    --pg-font-mono:'IBM Plex Mono', 'SF Mono', Consolas, monospace;
+    background:var(--pg-paper); color:var(--pg-ink); font-family:var(--pg-font-body);
+    max-width:780px; margin:0 auto; padding:0 16px;
+  }
+  .pg-doc *{ box-sizing:border-box; }
+  .pg-doc .pg-cover{
+    min-height:900px; display:flex; flex-direction:column; justify-content:space-between; padding:40px 4px 26px;
+  }
+  .pg-doc .pg-cover-top{ display:flex; justify-content:space-between; align-items:flex-start; gap:14px; }
+  .pg-doc .pg-cover-identity{ text-align:left; font-size:15px; color:var(--pg-ink-soft); line-height:1.9; }
+  .pg-doc .pg-cover-identity b{ color:var(--pg-ink); font-weight:600; }
+  .pg-doc .pg-cover-contacts{ text-align:right; font-size:15px; color:var(--pg-ink-soft); line-height:1.9; }
+  .pg-doc .pg-cover-contacts i{ color:var(--pg-ink-faint); }
+  .pg-doc .pg-cover-middle{ flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center; gap:20px; }
+  .pg-doc .pg-cover-logo-mark{
+    width:64px; height:64px; margin:0 auto; border-radius:999px; background:var(--pg-accent-soft);
+    color:var(--pg-accent-ink); font-family:var(--pg-font-display); font-size:21px; font-weight:600;
+    display:flex; align-items:center; justify-content:center; letter-spacing:.02em;
+  }
+  .pg-doc .pg-cover-title{ font-family:var(--pg-font-display); font-size:30px; font-weight:600; line-height:1.35; color:var(--pg-ink); }
+  .pg-doc .pg-cover-bottom{ text-align:center; font-family:var(--pg-font-display); font-style:italic; font-size:23px; color:var(--pg-ink-soft); }
+
+  .pg-doc .pg-pagina{ min-height:930px; display:flex; flex-direction:column; }
+  .pg-doc .pg-pagina-footer{
+    margin-top:auto; padding-top:8px; border-top:1px solid var(--pg-border-soft);
+    display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:12.5px; color:var(--pg-ink-soft);
+  }
+  .pg-doc .pg-pagina-footer b{ color:var(--pg-ink); font-weight:600; }
+  .pg-doc .pg-break-after{ break-after:page; page-break-after:always; }
+  .pg-doc .pg-break-before{ break-before:page; page-break-before:always; }
+
+  .pg-doc .pg-section-title{
+    font-family:var(--pg-font-display); font-size:19px; font-weight:600; margin:16px 0 7px;
+    display:flex; align-items:center; gap:8px; color:var(--pg-ink);
+  }
+  .pg-doc .pg-section-title .pg-tag{
+    font-family:var(--pg-font-body); font-size:10px; font-weight:600; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--pg-ink-faint); background:var(--pg-border-soft); padding:1px 7px; border-radius:999px;
+  }
+  .pg-doc .pg-section-sub{ font-size:11px; color:var(--pg-ink-faint); margin:-3px 0 6px; line-height:1.4; }
+  .pg-doc .pg-card{
+    background:var(--pg-surface-raised); border:1px solid var(--pg-border-soft); border-radius:14px;
+    box-shadow:0 1px 2px rgba(23,34,29,.06), 0 1px 1px rgba(23,34,29,.04); padding:8px 14px; margin-bottom:3px;
+  }
+
+  .pg-doc .pg-glossario-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:22px; }
+  .pg-doc .pg-glossario-riga{ padding:5px 0; border-top:1px solid var(--pg-border-soft); }
+  .pg-doc .pg-glossario-riga:nth-child(1), .pg-doc .pg-glossario-riga:nth-child(2){ border-top:none; padding-top:2px; }
+  .pg-doc .pg-glossario-nome{ font-size:11.5px; font-weight:600; color:var(--pg-ink); margin-bottom:1px; }
+  .pg-doc .pg-glossario-esempi{ font-size:10.5px; color:var(--pg-ink-soft); line-height:1.35; }
+
+  .pg-doc .pg-opzione{ display:flex; align-items:flex-start; gap:8px; padding:5px 0; border-top:1px solid var(--pg-border-soft); }
+  .pg-doc .pg-opzione:first-child{ border-top:none; padding-top:1px; }
+  .pg-doc .pg-opzione-num{
+    width:19px; height:19px; border-radius:999px; background:var(--pg-accent-soft); color:var(--pg-accent-ink);
+    font-family:var(--pg-font-mono); font-size:10.5px; font-weight:600; flex:none;
+    display:flex; align-items:center; justify-content:center; margin-top:1px;
+  }
+  .pg-doc .pg-opzione-corpo{ flex:1; min-width:0; }
+  .pg-doc .pg-opzione-titolo{ font-size:12px; font-weight:600; margin-bottom:1px; }
+  .pg-doc .pg-opzione-alimenti{ font-size:10.8px; color:var(--pg-ink-soft); line-height:1.35; }
+  .pg-doc .pg-opzione-alimenti .pg-g{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; }
+  .pg-doc .pg-opzione-alimenti .pg-fisso{ color:var(--pg-ink-faint); }
+  .pg-doc .pg-fonte-pill{ font-size:9px; font-weight:600; text-transform:uppercase; letter-spacing:.04em; padding:1px 7px; border-radius:999px; }
+  .pg-doc .pg-fonte-pill.pg-piano{ background:var(--pg-good-soft); color:var(--pg-good); }
+  .pg-doc .pg-fonte-pill.pg-preset{ background:var(--pg-warning-soft); color:#8a6a1c; }
+  .pg-doc .pg-fonte-pill.pg-fisso{ background:var(--pg-border-soft); color:var(--pg-ink-faint); }
+
+  .pg-doc .pg-equiv-table{ width:100%; border-collapse:collapse; font-size:10.8px; }
+  .pg-doc .pg-equiv-table th{
+    text-align:left; font-weight:600; color:var(--pg-ink-faint); font-size:10px; text-transform:uppercase;
+    letter-spacing:.04em; padding:0 16px 4px 0; border-bottom:1px solid var(--pg-border-soft);
+  }
+  .pg-doc .pg-equiv-table td{ padding:4.5px 16px 4.5px 0; border-bottom:1px solid var(--pg-border-soft); color:var(--pg-ink-soft); }
+  .pg-doc .pg-equiv-table th:last-child, .pg-doc .pg-equiv-table td:last-child{ padding-right:0; }
+  .pg-doc .pg-equiv-table tr:last-child td{ border-bottom:none; }
+  .pg-doc .pg-equiv-table td.pg-g{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; text-align:right; }
+  .pg-doc .pg-equiv-table td:first-child{ color:var(--pg-ink); font-weight:500; }
+  .pg-doc .pg-equiv-table .pg-num{ font-family:var(--pg-font-mono); color:var(--pg-ink); font-weight:500; }
+
+  .pg-doc .pg-freq-table{ table-layout:fixed; }
+  .pg-doc .pg-freq-table col.pg-col-alimenti{ width:34%; }
+  .pg-doc .pg-freq-table col.pg-col-dato{ width:22%; }
+  .pg-doc .pg-freq-table th, .pg-doc .pg-freq-table td{ padding-left:6px; padding-right:6px; }
+  .pg-doc .pg-freq-table th:first-child, .pg-doc .pg-freq-table td:first-child{ padding-left:0; text-align:left; }
+  .pg-doc .pg-freq-table th:last-child, .pg-doc .pg-freq-table td:last-child{ padding-right:0; }
+  .pg-doc .pg-freq-table th:not(:first-child), .pg-doc .pg-freq-table td:not(:first-child){ text-align:center; }
+  .pg-doc .pg-freq-table td.pg-g{ text-align:center; }
+
+  .pg-doc .pg-legenda{ display:flex; gap:16px; flex-wrap:wrap; font-size:10.5px; color:var(--pg-ink-faint); margin-top:14px; padding-top:8px; border-top:1px solid var(--pg-border-soft); }
+  .pg-doc .pg-legenda span{ display:inline-flex; align-items:center; gap:6px; }
+  .pg-doc .pg-dot{ width:8px; height:8px; border-radius:999px; flex:none; }
+  .pg-doc .pg-dot.pg-piano{ background:var(--pg-good); }
+  .pg-doc .pg-dot.pg-preset{ background:var(--pg-warning); }
+
+  @media print{
+    .pg-doc{ max-width:none; padding:0; }
+    @page{ size:A4; margin:20mm 12mm 26mm 12mm; }
+  }
+
   .p-checkin-row{ display:flex; justify-content:space-between; align-items:center; padding:10px 0; border-bottom:1px solid var(--border-soft); }
   .p-checkin-row:last-child{ border-bottom:none; }
   .p-checkin-date{ font-size:12.8px; font-weight:600; }
@@ -1385,20 +1497,6 @@
             <svg viewBox="0 0 24 24" fill="none"><path d="M5 13L9.5 17.5L19 7" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Salva modifiche
           </button>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-overlay" id="pg-stampa-overlay" style="display:none;" onclick="if(event.target===this) chiudiPgStampa();">
-      <div class="modal-card" style="max-width:760px;">
-        <div id="pg-stampa-view">
-          <h3>Anteprima di stampa — Piano Generico</h3>
-          <p id="pg-stampa-sub">—</p>
-          <div id="pg-stampa-contenuto"></div>
-        </div>
-        <div style="display:flex; gap:10px; margin-top:16px;">
-          <button class="btn ghost" type="button" onclick="chiudiPgStampa()">Chiudi</button>
-          <button class="btn primary" type="button" onclick="pgAvviaStampa_()">Stampa / salva PDF</button>
         </div>
       </div>
     </div>
@@ -2105,6 +2203,23 @@
     </div>
   </div>
 
+  <!-- Anteprima di stampa del Piano Generico — condivisa tra vista nutrizionista e vista paziente,
+       quindi va tenuta fuori da #view-nutri/#view-paziente (altrimenti display:none sul contenitore
+       della vista non attiva la nasconderebbe sempre, anche quando aperta dall'altra vista). -->
+  <div class="modal-overlay" id="pg-stampa-overlay" style="display:none;" onclick="if(event.target===this) chiudiPgStampa();">
+    <div class="modal-card" style="max-width:860px;">
+      <div id="pg-stampa-view">
+        <h3>Anteprima di stampa — Piano Generico</h3>
+        <p id="pg-stampa-sub">—</p>
+        <div id="pg-stampa-contenuto"></div>
+      </div>
+      <div style="display:flex; gap:10px; margin-top:16px;">
+        <button class="btn ghost" type="button" onclick="chiudiPgStampa()">Chiudi</button>
+        <button class="btn primary" type="button" onclick="pgAvviaStampa_()">Stampa / salva PDF</button>
+      </div>
+    </div>
+  </div>
+
   <!-- =========================================================== -->
   <!-- VISTA PAZIENTE                                                -->
   <!-- =========================================================== -->
@@ -2159,6 +2274,10 @@
             <button type="button" class="btn small" id="p-piano-spesa-btn" style="width:100%; justify-content:center; margin-bottom:14px; display:none;" onclick="setPatientScreen('spesa'); setSpesaSubtab('lista')">
               <svg viewBox="0 0 24 24" fill="none"><path d="M3 4H5L7.2 15.2C7.35 16 8.05 16.5 8.85 16.5H18.1C18.85 16.5 19.5 16 19.7 15.3L21.5 8.5H6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/><circle cx="9.5" cy="20" r="1.3" fill="currentColor"/><circle cx="17.5" cy="20" r="1.3" fill="currentColor"/></svg>
               Lista della spesa della settimana
+            </button>
+            <button type="button" class="btn small" id="p-piano-generico-btn" style="width:100%; justify-content:center; margin-bottom:14px;" onclick="pPazienteApriPianoGenerico()">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M6 4H15L19 8V20A1 1 0 0 1 18 21H6A1 1 0 0 1 5 20V5A1 1 0 0 1 6 4Z" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M15 4V8H19" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/><path d="M8.5 12.5H15.5M8.5 15.5H15.5M8.5 9.5H12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+              Piano generico: alimenti e porzioni
             </button>
             <div class="p-plan-preview" id="p-piano-empty">
               Il tuo piano alimentare comparirà qui non appena la tua nutrizionista lo avrà caricato.
@@ -6635,30 +6754,32 @@
     const baseDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => !!f.fonteCarboidrati);
     const basePreset = pgTrovaPreset_(presetCategoria, sesso, pasto, baseCategoria);
     const baseValore = baseDalPiano != null ? baseDalPiano : basePreset.valore;
+    const baseFonte = baseDalPiano != null ? 'piano' : 'preset';
 
     const opzioni = categorie.map(cat => {
       const chiave = (pasto === 'Pranzo' ? 'pranzo_' : 'cena_') + cat;
       const label = PG_CATEGORIA_LABEL[cat];
-      const base = { label:baseLabel, valore:baseValore, unita:'g' };
+      const base = { label:baseLabel, valore:baseValore, unita:'g', fonte:baseFonte };
 
       if(cat === 'formaggi'){
-        return { chiave, categoria:cat, base, proteica:{ label, testo:'Formaggio a scelta (vedi tabella)' } };
+        return { chiave, categoria:cat, base, proteica:{ label, testo:'Formaggio a scelta (vedi tabella)', fonte:'fisso' } };
       }
       if(cat === 'uova'){
         const grDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => f.categoriaProteica === 'uova');
-        let valore, unita = 'pz';
+        let valore, unita = 'pz', fonte;
         if(grDalPiano != null){
-          valore = Math.max(1, Math.round(grDalPiano / (pesoMedioUovo || 60)));
+          valore = Math.max(1, Math.round(grDalPiano / (pesoMedioUovo || 60))); fonte = 'piano';
         } else {
           const preset = pgTrovaPreset_(presetCategoria, sesso, pasto, cat);
-          valore = preset.valore; unita = preset.unita || 'pz';
+          valore = preset.valore; unita = preset.unita || 'pz'; fonte = 'preset';
         }
-        return { chiave, categoria:cat, base, proteica:{ label, valore, unita } };
+        return { chiave, categoria:cat, base, proteica:{ label, valore, unita, fonte } };
       }
       const grDalPiano = pgDalPiano_(plan, giorni, pasto, foodsById, f => f.categoriaProteica === cat);
       const preset = pgTrovaPreset_(presetCategoria, sesso, pasto, cat);
       const valore = grDalPiano != null ? grDalPiano : preset.valore;
-      return { chiave, categoria:cat, base, proteica:{ label, valore, unita: preset.unita || 'g' } };
+      const fonte = grDalPiano != null ? 'piano' : 'preset';
+      return { chiave, categoria:cat, base, proteica:{ label, valore, unita: preset.unita || 'g', fonte } };
     });
 
     return { opzioni, baseValore };
@@ -6720,10 +6841,12 @@
 
     const olioDalPiano = pgDalPianoDuePasti_(plan, giorni, 'Pranzo', 'Cena', foodsById, f => !!f.fonteGrassi);
     const olio = olioDalPiano != null ? olioDalPiano : (Number(presetVerdureOlio.olio) || 10);
+    const olioFonte = olioDalPiano != null ? 'piano' : 'preset';
 
     return {
       verdure: Number(presetVerdureOlio.verdure) || 200,
       olio,
+      olioFonte,
       derivati,
       pranzo: risPranzo.opzioni,
       cena: risCena.opzioni,
@@ -6937,6 +7060,188 @@
     `;
   }
 
+  /* ================= Piano Generico: documento di stampa (copertina + pagine) =================
+     Stesso contenuto/aspetto del mockup approvato da Giovanni, con i dati reali del paziente al
+     posto degli esempi. Il glossario "Categorie alimentari" e le "Frequenze alimentari consigliate"
+     sono contenuto fisso, uguale per tutti i pazienti (non ancora modificabile da Impostazioni);
+     la tabella Formaggi (quantità fisse) idem. Tutto il resto viene dal Piano Generico calcolato. */
+  function pgIniziali_(nome){
+    const pulito = String(nome||'').replace(/^Dott\.?\s*(ssa)?\.?\s*/i, '').trim();
+    const parti = pulito.split(/\s+/).filter(Boolean);
+    return ((parti[0]||'').charAt(0) + (parti[1]||'').charAt(0)).toUpperCase();
+  }
+  function pgHtmlGlossario_(){
+    const voci = [
+      ['Cereale', 'Pasta, riso (bianco, integrale, basmati, venere), orzo, farro, couscous, quinoa, bulgur, avena, mais, grano saraceno, miglio.'],
+      ['Pane', 'Pane comune, pane integrale, pane di segale, pane di semola, pane azzimo.'],
+      ['Pesce magro', "Merluzzo, nasello, sogliola, platessa, branzino, orata, gamberetti, gamberi, cozze, vongole, calamari, seppie, polpo."],
+      ['Pesce grasso', 'Salmone, pesce spada, tonno, sgombro, alici, sardine, aringa.'],
+      ['Pesce conservato', "Tonno in scatola, salmone in scatola, sgombro in scatola, sardine in scatola, alici sott'olio."],
+      ['Carne bianca', 'Petto di pollo, coscia di pollo, tacchino, coniglio, faraona.'],
+      ['Carne rossa', 'Manzo, vitello, maiale magro, cavallo.'],
+      ['Legumi', 'Ceci, lenticchie, fagioli, piselli, lupini.'],
+      ['Uova', 'Uova.'],
+      ['Formaggi', 'Mozzarella, ricotta, feta, primo sale, Philadelphia, fiocchi di latte. Quantità in fondo al documento.'],
+      ['Proteine vegetali', 'Soia, seitan, tempeh, tofu, straccetti di soia, granulare di soia.'],
+      ['Affettato', 'Solo quelli magri: prosciutto cotto, prosciutto crudo, bresaola, fesa di tacchino.'],
+      ['Frutta secca', 'Arachidi, mandorle, noci, nocciole, pistacchi, anacardi.'],
+    ];
+    return voci.map(([nome, esempi]) => `<div class="pg-glossario-riga"><div class="pg-glossario-nome">${cpEsc(nome)}</div><div class="pg-glossario-esempi">${cpEsc(esempi)}</div></div>`).join('');
+  }
+  function pgHtmlFrequenze_(){
+    const righe = [
+      ['Cereali','','1','Giornaliera'], ['Patate','','2 o più','Settimanale'],
+      ['Ortaggi','200 g','2','Giornaliera'], ['Frutta','150 g','3','Giornaliera'],
+      ['Carne rossa','','1','Settimanale'], ['Carne bianca','','2-3','Settimanale'],
+      ['Carne lavorata','50 g','1','Settimanale'], ['Pesce fresco','','2-3','Settimanale'],
+      ['Pesce conservato','50 g','1','Settimanale'], ['Uova','','4-6','Settimanale'],
+      ['Legumi','','3 o più','Settimanale'], ['Latte o yogurt','','2','Giornaliera'],
+      ['Formaggi','','2-3','Settimanale'], ['Olio','10-15 g','2','Giornaliera'],
+    ];
+    return righe.map(([a,peso,qta,freq]) => `<tr><td>${cpEsc(a)}</td><td class="pg-g">${cpEsc(peso)}</td><td>${cpEsc(qta)}</td><td>${cpEsc(freq)}</td></tr>`).join('');
+  }
+  function pgHtmlFormaggiTabella_(){
+    const righe = [
+      ['Mozzarella (anche light / proteica)','100 g'], ['Ricotta','100 g'], ['Ricotta light / proteica','150 g'],
+      ['Feta','100 g'], ['Primo sale','100 g'], ['Philadelphia','60 g'],
+      ['Philadelphia light / proteico','100 g'], ['Fiocchi di latte (anche light)','200 g'],
+    ];
+    return righe.map(([nome,g]) => `<tr><td>${cpEsc(nome)}</td><td class="pg-g">${cpEsc(g)}</td></tr>`).join('');
+  }
+  function pgFontePillHtml_(fonte){
+    if(fonte === 'piano') return '<span class="pg-fonte-pill pg-piano">Dal piano</span>';
+    if(fonte === 'fisso') return '<span class="pg-fonte-pill pg-fisso">Fisso</span>';
+    return '<span class="pg-fonte-pill pg-preset">Preimpostato</span>';
+  }
+  function pgHtmlOpzioneDerivataStampa_(o, num){
+    const elenco = o.righe.map(r => `${cpEsc(cpNomeSenzaMarca(r.nome))} <span class="pg-g">${cpFmt(r.g)} g</span>`).join(' · ');
+    return `<div class="pg-opzione">
+      <div class="pg-opzione-num">${num}</div>
+      <div class="pg-opzione-corpo"><div class="pg-opzione-titolo">${elenco}</div></div>
+    </div>`;
+  }
+  function pgHtmlOpzioneFissaStampa_(o, num, verdure, olio){
+    const baseTxt = `${cpEsc(o.base.label)} <span class="pg-g">${cpFmt(o.base.valore)} g</span> ${pgFontePillHtml_(o.base.fonte)}`;
+    const proteicaTxt = o.proteica.testo
+      ? `${cpEsc(o.proteica.testo)} ${pgFontePillHtml_('fisso')}`
+      : `${cpEsc(o.proteica.label)} <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span> ${pgFontePillHtml_(o.proteica.fonte)}`;
+    return `<div class="pg-opzione">
+      <div class="pg-opzione-num">${num}</div>
+      <div class="pg-opzione-corpo">
+        <div class="pg-opzione-titolo">${cpEsc(o.base.label)} + ${cpEsc(o.proteica.label)}</div>
+        <div class="pg-opzione-alimenti">${baseTxt} · ${proteicaTxt} · <span class="pg-fisso">Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span></span></div>
+      </div>
+    </div>`;
+  }
+  function pgHtmlStampaCompleta_(piano, imp, meta){
+    imp = imp || {};
+    const nomeProf = imp.pg_nome_professionista || 'Dott. Giovanni Murdaca';
+    const titoli = (imp.pg_titoli_professionista || '').split('\n').map(t => t.trim()).filter(Boolean);
+    const email = imp.pg_email || '', telefono = imp.pg_telefono || '', piva = imp.pg_piva || '', albo = imp.pg_albo_biologi || '';
+    const slogan = imp.pg_slogan || '';
+    const introTesto = (imp.pg_intro_testo || '').trim();
+    const nomePaziente = (meta && meta.nomePaziente) || '';
+    const iniziali = pgIniziali_(nomeProf) || 'GM';
+
+    const derivati = {};
+    PG_PASTI_DERIVATI.forEach(p => { derivati[p] = (piano.derivati[p]||[]).filter(o => !o.escluso); });
+    const pranzoAttivo = piano.pranzo.filter(o => !o.escluso);
+    const cenaAttivo = piano.cena.filter(o => !o.escluso);
+
+    const sezDerivataPagina = nome => {
+      const opz = derivati[nome];
+      if(nome === 'Dopo cena' && !opz.length) return '';
+      return `
+        <div class="pg-section-title">${cpEsc(nome)} <span class="pg-tag">${opz.length} opzion${opz.length===1?'e':'i'}</span></div>
+        <div class="pg-card">${opz.length ? opz.map((o,i) => pgHtmlOpzioneDerivataStampa_(o, i+1)).join('') : '<div class="pg-opzione"><div class="pg-opzione-corpo"><div class="pg-opzione-titolo">Nessuna opzione trovata nel piano settimanale.</div></div></div>'}</div>`;
+    };
+    const sezFissaPagina = (nome, opz) => `
+      <div class="pg-section-title">${cpEsc(nome)} <span class="pg-tag">${opz.length} opzion${opz.length===1?'e':'i'}</span></div>
+      <div class="pg-card">${opz.map((o,i) => pgHtmlOpzioneFissaStampa_(o, i+1, piano.verdure, piano.olio)).join('')}</div>`;
+
+    const footer = `<div class="pg-pagina-footer"><span>${cpEsc(nomeProf)}${titoli[0] ? ' — ' + cpEsc(titoli[0]) : ''}</span><span>Piano alimentare per <b>${cpEsc(nomePaziente)}</b></span></div>`;
+    const paneCena = cenaAttivo.length ? cenaAttivo[0].base.valore : (piano.cena[0] ? piano.cena[0].base.valore : 0);
+
+    return `<div class="pg-doc">
+      <div class="pg-cover pg-break-after">
+        <div class="pg-cover-top">
+          <div class="pg-cover-identity">
+            <div><b>${cpEsc(nomeProf)}</b></div>
+            ${titoli.map(t => `<div>${cpEsc(t)}</div>`).join('')}
+          </div>
+          <div class="pg-cover-contacts">
+            ${email ? `<div>${cpEsc(email)}</div>` : ''}
+            ${telefono ? `<div>N° telefono: ${cpEsc(telefono)}</div>` : ''}
+            ${piva ? `<div>P. IVA ${cpEsc(piva)}</div>` : ''}
+            ${albo ? `<div>Iscrizione Albo Biologi n° ${cpEsc(albo)}</div>` : ''}
+          </div>
+        </div>
+        <div class="pg-cover-middle">
+          <div class="pg-cover-logo-mark">${cpEsc(iniziali)}</div>
+          <div class="pg-cover-title">Piano alimentare<br>per <b>${cpEsc(nomePaziente)}</b></div>
+        </div>
+        <div class="pg-cover-bottom">${slogan ? '«' + cpEsc(slogan) + '»' : ''}</div>
+      </div>
+
+      ${introTesto ? `
+      <div class="pg-pagina pg-break-after">
+        <div class="pg-section-title">Introduzione al percorso alimentare</div>
+        <div class="pg-card"><div class="pg-opzione-alimenti" style="white-space:pre-line; padding:6px 0; font-size:12px;">${cpEsc(introTesto)}</div></div>
+        ${footer}
+      </div>` : ''}
+
+      <div class="pg-pagina${introTesto ? '' : ' pg-break-after'}">
+        <div class="pg-section-title">Categorie alimentari</div>
+        <div class="pg-card"><div class="pg-glossario-grid">${pgHtmlGlossario_()}</div></div>
+        <div class="pg-section-title">Frequenze alimentari consigliate</div>
+        <div class="pg-card">
+          <table class="pg-equiv-table pg-freq-table">
+            <colgroup><col class="pg-col-alimenti"><col class="pg-col-dato"><col class="pg-col-dato"><col class="pg-col-dato"></colgroup>
+            <thead><tr><th>Alimenti</th><th>Peso (g)</th><th>Quantità</th><th>Frequenza</th></tr></thead>
+            <tbody>${pgHtmlFrequenze_()}</tbody>
+          </table>
+        </div>
+        ${footer}
+      </div>
+
+      <div class="pg-pagina pg-break-before">
+        ${sezDerivataPagina('Colazione')}
+        ${sezDerivataPagina('Spuntino mattina')}
+        ${sezDerivataPagina('Spuntino pomeriggio')}
+        ${sezDerivataPagina('Dopo cena')}
+        ${footer}
+      </div>
+
+      <div class="pg-pagina pg-break-before">
+        ${sezFissaPagina('Pranzo', pranzoAttivo)}
+        ${sezFissaPagina('Cena', cenaAttivo)}
+        ${footer}
+      </div>
+
+      <div class="pg-pagina pg-break-before">
+        <div class="pg-section-title">Formaggi</div>
+        <div class="pg-card"><table class="pg-equiv-table"><thead><tr><th>Formaggio</th><th style="text-align:right;">Quantità</th></tr></thead><tbody>${pgHtmlFormaggiTabella_()}</tbody></table></div>
+        <div class="pg-section-title">Sostituzione fonti di carboidrati a cena</div>
+        <div class="pg-card">
+          <table class="pg-equiv-table"><thead><tr><th>In alternativa a Pane <span class="pg-num">${cpFmt(paneCena)} g</span></th><th style="text-align:right;">Quantità equivalente</th></tr></thead>
+            <tbody>${piano.carboEquivalenza.map(r => `<tr><td>${cpEsc(r.alimento)}</td><td class="pg-g">${cpFmt(r.grammi)} g</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="pg-section-title">Sostituzione fonte di grassi</div>
+        <div class="pg-card">
+          <table class="pg-equiv-table"><thead><tr><th>In alternativa a Olio <span class="pg-num">${cpFmt(piano.olio)} g</span></th><th style="text-align:right;">Quantità equivalente</th></tr></thead>
+            <tbody>${piano.grassiEquivalenza.map(r => `<tr><td>${cpEsc(r.alimento)}</td><td class="pg-g">${cpFmt(r.grammi)} g</td></tr>`).join('')}</tbody>
+          </table>
+        </div>
+        <div class="pg-legenda">
+          <span><span class="pg-dot pg-piano"></span> valore preso dal piano settimanale</span>
+          <span><span class="pg-dot pg-preset"></span> valore preimpostato (nessuna fonte trovata quel pasto)</span>
+        </div>
+        ${footer}
+      </div>
+    </div>`;
+  }
+
   async function renderPianoGenericoTab(){
     const subEl = document.getElementById('pg-sub');
     const contEl = document.getElementById('pg-contenuto');
@@ -7036,11 +7341,23 @@
       cpBottoneFinito_(btn);
     }
   }
-  function pgStampa(){
+  async function pgStampa(){
     if(!PG_STATO) return;
-    document.getElementById('pg-stampa-sub').textContent = (currentPatientMeta && currentPatientMeta.Nome) ? ('Paziente: ' + currentPatientMeta.Nome) : '';
-    document.getElementById('pg-stampa-contenuto').innerHTML = pgHtmlPiano_(pgApplicaEsclusioni(PG_STATO.dati, PG_ESCLUSE));
-    document.getElementById('pg-stampa-overlay').style.display = 'flex';
+    const btn = document.getElementById('btn-pg-stampa');
+    cpBottoneCaricando_(btn, 'Preparazione…');
+    try{
+      const res = await apiGet('pgImpostazioniLeggi', { codice: SESSION.codice });
+      const imp = res.ok ? res.impostazioni : {};
+      const nomePaziente = (currentPatientMeta && currentPatientMeta.Nome) || currentPatientCode || '';
+      const piano = pgApplicaEsclusioni(PG_STATO.dati, PG_ESCLUSE);
+      document.getElementById('pg-stampa-sub').textContent = 'Anteprima per ' + nomePaziente + ' — controlla che sia tutto corretto prima di stampare o salvare come PDF.';
+      document.getElementById('pg-stampa-contenuto').innerHTML = pgHtmlStampaCompleta_(piano, imp, { nomePaziente });
+      document.getElementById('pg-stampa-overlay').style.display = 'flex';
+    } catch(err){
+      showToast('Errore di connessione: ' + err.message);
+    } finally {
+      cpBottoneFinito_(btn);
+    }
   }
   function chiudiPgStampa(){
     document.getElementById('pg-stampa-overlay').style.display = 'none';
@@ -7050,6 +7367,39 @@
     const cleanup = () => document.body.classList.remove('printing-pg');
     window.addEventListener('afterprint', cleanup, { once:true });
     window.print();
+  }
+
+  // ---- Piano Generico lato paziente: riusa la stessa finestra di anteprima/stampa già costruita
+  // per la nutrizionista (#pg-stampa-overlay, pgHtmlStampaCompleta_), così il paziente vede
+  // esattamente lo stesso documento curato, con le opzioni escluse già filtrate via
+  // pgApplicaEsclusioni. Sola lettura: nessun controllo di esclusione o rigenerazione qui.
+  async function pPazienteApriPianoGenerico(){
+    const btn = document.getElementById('p-piano-generico-btn');
+    if(!SESSION || !SESSION.paziente || !SESSION.paziente.Codice) return;
+    const paziente = SESSION.paziente.Codice;
+    cpBottoneCaricando_(btn, 'Caricamento…');
+    try{
+      const [resPiano, resEscl, resImp] = await Promise.all([
+        apiGet('pgLeggi', { codice: SESSION.codice, paziente }),
+        apiGet('pgEsclusioniLeggi', { codice: SESSION.codice, paziente }),
+        apiGet('pgImpostazioniLeggi', { codice: SESSION.codice }),
+      ]);
+      if(!resPiano.ok || !resPiano.piano){
+        showToast('Il tuo piano generico non è ancora pronto: chiedi alla tua nutrizionista.');
+        return;
+      }
+      const escluse = (resEscl.ok && resEscl.chiavi) || [];
+      const imp = resImp.ok ? resImp.impostazioni : {};
+      const nomePaziente = SESSION.paziente.Nome || '';
+      const piano = pgApplicaEsclusioni(resPiano.piano.dati, escluse);
+      document.getElementById('pg-stampa-sub').textContent = 'Alimenti e porzioni del tuo piano — puoi anche salvarlo o stamparlo in PDF.';
+      document.getElementById('pg-stampa-contenuto').innerHTML = pgHtmlStampaCompleta_(piano, imp, { nomePaziente });
+      document.getElementById('pg-stampa-overlay').style.display = 'flex';
+    } catch(err){
+      showToast('Errore di connessione: ' + err.message);
+    } finally {
+      cpBottoneFinito_(btn);
+    }
   }
 
   async function apriDiario(){
