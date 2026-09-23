@@ -805,12 +805,18 @@
     body.printing-spesa #cp-modal-spesa-view button{ display:none !important; }
     body.printing-spesa #cp-spesa-nutri-list{ max-height:none !important; overflow:visible !important; }
 
-    body.printing-pg > *:not(.modal-overlay){ display:none !important; }
+    /* Il Piano Generico si stampa da due posti diversi: la finestra della nutrizionista
+       (#pg-stampa-overlay, una .modal-overlay) e la schermata intera lato paziente
+       (#p-piano-generico, un .p-screen normale, niente sfondo/finestra da annullare). Entrambi
+       vengono spostati come figli diretti di <body> da cpAssicuraOverlayInBody_() al momento della
+       stampa (vedi pgAvviaStampa_), quindi basta escluderli qui dal "nascondi tutto". */
+    body.printing-pg > *:not(.modal-overlay):not(#p-piano-generico){ display:none !important; }
     body.printing-pg .modal-overlay{ position:static !important; background:none !important; display:block !important; padding:0 !important; }
     body.printing-pg .modal-card{ box-shadow:none !important; max-width:none !important; border:none !important; max-height:none !important; overflow:visible !important; }
     body.printing-pg .modal-card > *:not(#pg-stampa-view){ display:none !important; }
     body.printing-pg #pg-stampa-view > h3, body.printing-pg #pg-stampa-view > p{ display:none !important; }
     body.printing-pg #pg-stampa-view button{ display:none !important; }
+    body.printing-pg #p-piano-generico > *:not(#p-piano-generico-contenuto){ display:none !important; }
   }
 
   /* ---- Piano Generico: sezioni/opzioni nella scheda Studio e nell'anteprima di stampa ---- */
@@ -853,8 +859,14 @@
     --pg-font-mono:'IBM Plex Mono', 'SF Mono', Consolas, monospace;
     background:var(--pg-paper); color:var(--pg-ink); font-family:var(--pg-font-body);
     max-width:780px; margin:0 auto; padding:0 16px;
+    /* Senza questo, molti browser in stampa tolgono di default sfondi e colori (quello che si
+       spunta/togli come "Grafica in background") — risultato: pagina bianca invece che sul beige
+       del documento. Con questo il colore di sfondo stampa sempre, a prescindere da quella opzione
+       (è il motivo per cui il PDF dal PC risultava bianco mentre quello da telefono no: i due
+       browser avevano quella spunta impostata diversamente). */
+    -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact;
   }
-  .pg-doc *{ box-sizing:border-box; }
+  .pg-doc *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; color-adjust:exact; }
   .pg-doc .pg-cover{
     min-height:900px; display:flex; flex-direction:column; justify-content:space-between; padding:40px 4px 26px;
   }
@@ -872,7 +884,12 @@
   .pg-doc .pg-cover-title{ font-family:var(--pg-font-display); font-size:30px; font-weight:600; line-height:1.35; color:var(--pg-ink); }
   .pg-doc .pg-cover-bottom{ text-align:center; font-family:var(--pg-font-display); font-style:italic; font-size:23px; color:var(--pg-ink-soft); }
 
-  .pg-doc .pg-pagina{ min-height:900px; display:flex; flex-direction:column; }
+  /* L'altezza minima serve solo in stampa, per far corrispondere ogni sezione a una pagina fisica
+     e spingere il "piè di pagina" in fondo con margin-top:auto. Letta a schermo dentro la
+     schermata intera lato paziente (non più stampa, solo scorrimento continuo) creerebbe invece
+     grossi spazi vuoti dopo le sezioni più corte (es. Colazione/Spuntini) — qui va quindi tolta. */
+  .pg-doc .pg-pagina{ display:flex; flex-direction:column; }
+  @media print{ .pg-doc .pg-pagina{ min-height:900px; } }
   .pg-doc .pg-pagina-footer{
     margin-top:auto; padding-top:8px; border-top:1px solid var(--pg-border-soft);
     display:flex; justify-content:space-between; align-items:baseline; gap:12px; font-size:12.5px; color:var(--pg-ink-soft);
@@ -894,6 +911,14 @@
   .pg-doc .pg-card{
     background:var(--pg-surface-raised); border:1px solid var(--pg-border-soft); border-radius:14px;
     box-shadow:0 1px 2px rgba(23,34,29,.06), 0 1px 1px rgba(23,34,29,.04); padding:8px 14px; margin-bottom:3px;
+  }
+  /* Senza questo, in stampa un riquadro (Pranzo, Cena, Formaggi, ecc.) che non entra tutto nella
+     pagina viene tagliato a metà dal bordo del foglio — il bordo arrotondato/l'ombra si interrompono
+     di netto, con l'effetto "ritaglio strano" visto nel PDF. Con "non spezzare" il riquadro salta per
+     intero all'inizio della pagina successiva invece di essere tagliato. */
+  @media print{
+    .pg-doc .pg-card, .pg-doc .pg-opzione, .pg-doc .pg-glossario-riga{ break-inside:avoid; page-break-inside:avoid; }
+    .pg-doc .pg-equiv-table tr{ break-inside:avoid; page-break-inside:avoid; }
   }
 
   .pg-doc .pg-glossario-grid{ display:grid; grid-template-columns:1fr 1fr; column-gap:22px; }
@@ -937,7 +962,13 @@
   .pg-doc .pg-freq-table td.pg-g{ text-align:center; }
 
   @media print{
-    .pg-doc{ max-width:none; padding:0; }
+    /* Il browser del telefono (soprattutto Safari su iPhone) in stampa a volte impagina il
+       contenuto usando la larghezza dello SCHERMO invece del foglio A4, per via del meta
+       viewport="width=device-width" della pagina: il risultato è testo che va a capo dentro alle
+       righe come se lo schermo fosse strettissimo, con il documento che si allunga su molte più
+       pagine del dovuto. Fissare qui una larghezza esplicita, non legata al viewport, costringe il
+       motore di stampa a impaginare come su desktop e poi scalare il risultato sul foglio. */
+    .pg-doc{ max-width:none; width:760px; padding:0; }
     /* Il checkbox "Intestazioni e piè di pagina" del browser va tolto in stampa (rimuove data/ora,
        titolo pagina e link in automatico) — qui aggiungiamo SOLO il numero di pagina, disegnato da
        noi con i colori e il font del documento invece di quello generico del browser. */
@@ -2429,6 +2460,24 @@
               <div class="toggle-row"><span>Piano aggiornato</span><div class="switch on"></div></div>
               <div class="toggle-row"><span>Promemoria controllo (48 ore prima)</span><div class="switch on"></div></div>
             </div>
+          </div>
+
+          <!-- PIANO GENERICO (alimenti/porzioni) — schermata intera, non più una finestra: sul
+               telefono usa tutto lo spazio disponibile, come le altre schermate dell'app. Si apre
+               da un pulsante dentro "Il tuo piano" e si torna indietro con la freccia in alto. -->
+          <div class="p-screen" id="p-piano-generico">
+            <button type="button" class="btn small ghost" style="margin-bottom:12px;" onclick="setPatientScreen('piano')">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M15 5L8 12L15 19" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Il tuo piano
+            </button>
+            <div style="display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:14px;">
+              <div class="p-greeting" style="font-size:18px; margin:0;">Alimenti e porzioni</div>
+              <button type="button" class="btn small" id="p-piano-generico-stampa-btn" style="flex:none;" onclick="pgAvviaStampa_('p-piano-generico')">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M6 9V3H18V9" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 18H4C3.4 18 3 17.6 3 17V11C3 10.4 3.4 10 4 10H20C20.6 10 21 10.4 21 11V17C21 17.6 20.6 18 20 18H18" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M6 14H18V21H6V14Z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/></svg>
+                Stampa / PDF
+              </button>
+            </div>
+            <div id="p-piano-generico-contenuto"></div>
           </div>
 
         </div>
@@ -7126,27 +7175,35 @@
     ];
     return righe.map(([nome,g]) => `<tr><td>${cpEsc(nome)}</td><td class="pg-g">${cpEsc(g)}</td></tr>`).join('');
   }
+  // Titolo in grassetto (i nomi degli alimenti) + riga sotto con alimenti e quantità — niente
+  // etichette "Dal piano"/"Preimpostato" (al paziente non serve sapere da dove viene ciascun
+  // valore, solo cosa e quanto mangiare; l'informazione resta comunque visibile e modificabile per
+  // la nutrizionista nella scheda Studio). Per Colazione/Spuntini/Dopo cena non esiste un "nome
+  // ricetta" nei dati (sono combinazioni reali trovate nel piano settimanale, non ricette
+  // precompilate), quindi il titolo è la lista degli alimenti senza quantità.
   function pgHtmlOpzioneDerivataStampa_(o, num){
+    const titolo = o.righe.map(r => cpEsc(cpNomeSenzaMarca(r.nome))).join(' + ');
     const elenco = o.righe.map(r => `${cpEsc(cpNomeSenzaMarca(r.nome))} <span class="pg-g">${cpFmt(r.g)} g</span>`).join(' · ');
     return `<div class="pg-opzione">
       <div class="pg-opzione-num">${num}</div>
-      <div class="pg-opzione-corpo"><div class="pg-opzione-titolo">${elenco}</div></div>
+      <div class="pg-opzione-corpo">
+        <div class="pg-opzione-titolo">${titolo}</div>
+        <div class="pg-opzione-alimenti">${elenco}</div>
+      </div>
     </div>`;
   }
-  // Riga di Pranzo/Cena su UNA sola riga (niente più titolo in grassetto + riga dettagli separata,
-  // e niente più etichette "Dal piano"/"Preimpostato": al paziente non serve sapere da dove viene
-  // ciascun valore, solo quanto mangiarne — la stessa info resta comunque visibile e modificabile
-  // per la nutrizionista nella scheda Studio). Stesso stile, identico a pgHtmlOpzioneDerivataStampa_,
-  // così Colazione/Spuntini/Pranzo/Cena sono tutte visivamente uniformi.
   function pgHtmlOpzioneFissaStampa_(o, num, verdure, olio){
     const baseTxt = `${cpEsc(o.base.label)} <span class="pg-g">${cpFmt(o.base.valore)} g</span>`;
     const proteicaTxt = o.proteica.testo
       ? cpEsc(o.proteica.testo)
       : `${cpEsc(o.proteica.label)} <span class="pg-g">${cpFmt(o.proteica.valore)} ${o.proteica.unita==='pz'?'pz':'g'}</span>`;
-    const elenco = `${baseTxt} + ${proteicaTxt} · Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span>`;
+    const elenco = `${baseTxt} · ${proteicaTxt} · Verdure <span class="pg-g">${cpFmt(verdure)} g</span> · Olio <span class="pg-g">${cpFmt(olio)} g</span>`;
     return `<div class="pg-opzione">
       <div class="pg-opzione-num">${num}</div>
-      <div class="pg-opzione-corpo"><div class="pg-opzione-titolo">${elenco}</div></div>
+      <div class="pg-opzione-corpo">
+        <div class="pg-opzione-titolo">${cpEsc(o.base.label)} + ${cpEsc(o.proteica.label)}</div>
+        <div class="pg-opzione-alimenti">${elenco}</div>
+      </div>
     </div>`;
   }
   function pgHtmlStampaCompleta_(piano, imp, meta){
@@ -7374,17 +7431,21 @@
   function chiudiPgStampa(){
     document.getElementById('pg-stampa-overlay').style.display = 'none';
   }
-  function pgAvviaStampa_(){
-    cpAssicuraOverlayInBody_('pg-stampa-overlay');
+  // elementoId: quale contenitore rendere visibile in stampa — la finestra della nutrizionista
+  // (#pg-stampa-overlay, il default) oppure la schermata intera lato paziente (#p-piano-generico).
+  // Entrambi vengono spostati come figli diretti di <body> alla prima stampa (vedi
+  // cpAssicuraOverlayInBody_): è lì che il CSS di stampa li tiene visibili nascondendo il resto.
+  function pgAvviaStampa_(elementoId){
+    cpAssicuraOverlayInBody_(elementoId || 'pg-stampa-overlay');
     document.body.classList.add('printing-pg');
     const cleanup = () => document.body.classList.remove('printing-pg');
     window.addEventListener('afterprint', cleanup, { once:true });
     window.print();
   }
 
-  // ---- Piano Generico lato paziente: riusa la stessa finestra di anteprima/stampa già costruita
-  // per la nutrizionista (#pg-stampa-overlay, pgHtmlStampaCompleta_), così il paziente vede
-  // esattamente lo stesso documento curato, con le opzioni escluse già filtrate via
+  // ---- Piano Generico lato paziente: schermata intera (non più una finestra), così sul telefono
+  // occupa tutto lo spazio come le altre schermate dell'app. Riusa lo stesso documento costruito
+  // per la nutrizionista (pgHtmlStampaCompleta_), con le opzioni escluse già filtrate via
   // pgApplicaEsclusioni. Sola lettura: nessun controllo di esclusione o rigenerazione qui.
   async function pPazienteApriPianoGenerico(){
     const btn = document.getElementById('p-piano-generico-btn');
@@ -7405,9 +7466,8 @@
       const imp = resImp.ok ? resImp.impostazioni : {};
       const nomePaziente = SESSION.paziente.Nome || '';
       const piano = pgApplicaEsclusioni(resPiano.piano.dati, escluse);
-      document.getElementById('pg-stampa-sub').textContent = 'Alimenti e porzioni del tuo piano — puoi anche salvarlo o stamparlo in PDF.';
-      document.getElementById('pg-stampa-contenuto').innerHTML = pgHtmlStampaCompleta_(piano, imp, { nomePaziente });
-      document.getElementById('pg-stampa-overlay').style.display = 'flex';
+      document.getElementById('p-piano-generico-contenuto').innerHTML = pgHtmlStampaCompleta_(piano, imp, { nomePaziente });
+      setPatientScreen('piano-generico');
     } catch(err){
       showToast('Errore di connessione: ' + err.message);
     } finally {
